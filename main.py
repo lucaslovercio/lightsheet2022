@@ -1,6 +1,9 @@
 from segment_image import assess_models
 from finetuning import finetuning_loop
-
+#TODO
+'''
+- change the path to visualize on the validation set instead of the test set
+'''
 
 # finetune the mini unet model
 train_frames_path = 'TissueDataset/Training/Original'

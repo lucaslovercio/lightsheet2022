@@ -3,6 +3,11 @@ import numpy as np
 import cv2
 from data_loader import get_image_array, get_pairs_from_paths
 import os
+#TODO
+'''
+- save loss curves w/ model somehow
+- save text w/ learning curves and test images
+'''
 
 '''
 Name: prediction

@@ -3,6 +3,12 @@ import os
 import numpy as np
 import skimage.io as io
 import cv2
+#TODO
+'''
+- understand and imporve the text files being saved
+- clean this up
+'''
+
 
 Foreground = [250,250,50]
 Background = [0,150,0]

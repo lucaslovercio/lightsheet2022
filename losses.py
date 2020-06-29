@@ -2,6 +2,11 @@
 import tensorflow as tf
 from keras.backend.tensorflow_backend import _to_tensor
 import keras as K
+#TODO
+'''
+- add F1 score for macro averaging
+- implement tissue accuracy (need confusion matrix instead of y_true and y_predicted)
+'''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
 from keras.losses import binary_crossentropy

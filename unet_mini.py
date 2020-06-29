@@ -5,6 +5,8 @@ import losses
 import metrics
 #TODO
 '''
+- fix get_loss_func to work with categorical crossentropy (and be more generic, might need to_categorical (whiteboard))
+- implement early stopping
 - clean up
 '''
 def get_loss_func(loss_mode):
