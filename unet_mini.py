@@ -9,12 +9,18 @@ import metrics
 - implement early stopping
 - clean up
 '''
+
+#TODO extend this to a wider array of possibilities
 def get_loss_func(loss_mode):
-    loss_func = "binary_crossentropy"
+
     if loss_mode == "bcedice":
         loss_func = losses.dice_coef_loss_bce
-
-    # print("loss:", loss_func)
+    elif loss_mode == "categorical_crossentropy":
+        loss_func = loss_mode
+    else:
+        loss_func = "binary_crossentropy"
+    #print("loss:", loss_func)###
+    
     return loss_func
 
 def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', firstFilters=32, kSize=3,
@@ -114,9 +120,6 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
     model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,
                                                                    metrics.jaccard_coef_int, metrics.dice_coef,
                                                                    metrics.recall_m, metrics.precision_m, metrics.f1_m,
+                                                                   #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet
                                                                    'accuracy'])
-    #model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=['accuracy'])
-
-    # model.summary()
-
     return model

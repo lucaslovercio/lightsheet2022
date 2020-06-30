@@ -5,7 +5,8 @@ import skimage.io as io
 import cv2
 #TODO
 '''
-- understand and imporve the text files being saved
+- change showLosses so that it plots the new metrics
+- understand and improve the text files being saved
 - clean this up
 '''
 
@@ -36,11 +37,13 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
 
 def saveHistory(model, history, metrics, filename):
     ''' guarda en un .txt los valores que se obtuvieron en el entrenamiento '''
+    ''' save in a .txt the values obtained during training  '''
 
     name = filename + '_history.txt'
     arch = open(name, 'w')
 
     # obtengo los valores guardados en el history generado del entrenamiento
+    # get the values saved in the history generated from training
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
     loss = history.history['loss']
@@ -68,6 +71,7 @@ def saveHistory(model, history, metrics, filename):
     arch.close()
     return val_loss[-1]
 
+#TODO this function is where the new metrics will be added to plot them
 #def showLosses(history,metrics,epochs,modelName):
 def showLosses(history, epochs, modelName):
     # Plot training & validation accuracy values
@@ -130,7 +134,7 @@ def saveLossesTXT(history,modelNameFull):
     f.write(strToSave)
     f.close()
 
-
+#TODO find out if this actually gets used anywhere
 def prediction(model,imagePath, IMG_HEIGHT, IMG_WIDTH,image_output):
     img = cv2.imread(imagePath, 0)
     #train_img = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE) / 255.

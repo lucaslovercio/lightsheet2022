@@ -2,10 +2,13 @@ from data_loader import image_segmentation_generator
 from unet_mini import unet
 from save_training import showLosses,saveLossesTXT, saveModelSummary
 import os
+
+from keras.callbacks import EarlyStopping#new
+from keras.callbacks import ModelCheckpoint#new
 #TODO
 '''
+- fix up the modelcheckpoint/earlystopping functionality so that they work with save_training
 - add proper documentation to this function
-- maybe convert these global variables to function arguments and pass them in main
 '''
 
 # global variables
@@ -61,10 +64,16 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                         modelUnet.summary()
                                         
                                         # train the model
+                                        #new starts here
+                                        # from https://machinelearningmastery.com/how-to-stop-training-deep-neural-networks-at-the-right-time-using-early-stopping/
+                                        es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=20)
+                                        mc = ModelCheckpoint('best_model.h5', monitor='val_accuracy', mode='max', verbose=1, save_best_only=True)
+                                        #new ends here
                                         results = modelUnet.fit_generator(train_generator, epochs=EPOCHS,
                                                                           steps_per_epoch = (NO_OF_TRAINING_IMAGES//BATCH_SIZE),
                                                                           validation_data=val_generator,
-                                                                          validation_steps=(NO_OF_VAL_IMAGES//BATCH_SIZE),verbose=0)
+                                                                          validation_steps=(NO_OF_VAL_IMAGES//BATCH_SIZE),verbose=0,
+                                                                          callbacks = [es, mc])#TODO new
                                         
                                         # save the model
                                         modelName = str(modelUnet.name) + "_IMG_SIZE_" + str(IMG_SIZE) + "_loss1_" + str(

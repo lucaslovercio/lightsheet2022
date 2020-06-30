@@ -4,8 +4,7 @@ from keras.backend.tensorflow_backend import _to_tensor
 import keras as K
 #TODO
 '''
-- add F1 score for macro averaging
-- implement tissue accuracy (need confusion matrix instead of y_true and y_predicted)
+- add F1 score for macro averaging as a loss?
 '''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
