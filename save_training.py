@@ -6,6 +6,7 @@ import cv2
 #TODO
 '''
 - change showLosses so that it plots the new metrics
+- potentially have showLosses mark on the graph where the best model will be selected from, but will need to know patience
 - understand and improve the text files being saved
 - clean this up
 '''
@@ -71,23 +72,20 @@ def saveHistory(model, history, metrics, filename):
     arch.close()
     return val_loss[-1]
 
-#TODO this function is where the new metrics will be added to plot them
-#def showLosses(history,metrics,epochs,modelName):
-def showLosses(history, epochs, modelName):
+#TODO1 plot new metrics
+def show_losses(history, total_epochs, best_model_epoch, modelName):
+
     # Plot training & validation accuracy values
-    plt.plot(history.history['accuracy'])
-    plt.plot(history.history['val_accuracy'])
-    #plt.plot(history.history['jaccard_coef'])
-    #plt.plot(history.history['val_jaccard_coef'])
-    #plt.plot(history.history['dice_coef'])
-    #plt.plot(history.history['val_dice_coef'])
-    # plt.plot(metrics.val_fscoreM)
+    plt.plot(history.history['accuracy'], marker='o', markevery=[best_model_epoch])###
+    plt.plot(history.history['val_accuracy'], marker='o', markevery=[best_model_epoch])
+
+    
     plt.title('Model accuracy')
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     #plt.legend(['Acc Train', 'Acc Val', 'FscoreM Val'], loc='upper left')
     plt.legend(['Acc Train', 'Acc Val', 'JM Train', 'JM Val', 'Dice Train', 'Dice Val'], loc='upper left')
-    plt.xlim([0,epochs])
+    plt.xlim([0,total_epochs])
     plt.ylim(0,1)
     #plt.show()
 
@@ -95,14 +93,16 @@ def showLosses(history, epochs, modelName):
     plt.close()
 
     # Plot training & validation loss values
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
+    plt.plot(history.history['loss'], marker='o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_loss'], marker='o', markevery=[best_model_epoch])
+
+    
     plt.title('Model loss')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='lower left')
-    plt.xlim([0,epochs])
-    plt.ylim(0,3)
+    plt.xlim([0,total_epochs])
+    plt.ylim(0, max(history.history['loss']) + 1)
     #plt.show()
     plt.savefig(modelName + '_losses.png')
     plt.close()

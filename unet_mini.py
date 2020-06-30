@@ -8,6 +8,7 @@ import metrics
 - fix get_loss_func to work with categorical crossentropy (and be more generic, might need to_categorical (whiteboard))
 - implement early stopping
 - clean up
+- update model call to keras 2 API?
 '''
 
 #TODO extend this to a wider array of possibilities
