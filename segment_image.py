@@ -16,7 +16,7 @@ This function takes a preloaded, pretrained model, and uses it to create a segme
 given input image.
 b) role of each formal parameter
 Arguments:
--model:
+- model:
  This is a preloaded model which has already been trained and is not compiled at load 
  time.
 - image_path:

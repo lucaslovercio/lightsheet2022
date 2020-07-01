@@ -1,6 +1,6 @@
 from data_loader import image_segmentation_generator
 from unet_mini import unet
-from save_training import show_losses,saveLossesTXT, saveModelSummary
+from save_training import show_losses, saveLossesTXT, saveModelSummary
 import os
 
 from keras.callbacks import EarlyStopping
@@ -8,17 +8,15 @@ import numpy as np
 
 #TODO
 '''
-- fix up the earlystopping functionality so that they work with save_training
-- should earlystopping maximize val_f1 or minimize val_loss?
 - add proper documentation to this function
 '''
 
-# global variables
+# hyperparameters
 BATCH_SIZE = 16
 EPOCHS = 300 # early stopping is bounded by this maximum number of epochs, increase this a lot to run on compute canada
 IMG_SIZES = [128]# [256, 512]
-LR = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
-LOSSES = ['categorical_crossentropy',] #['bcedice', 'binary_crossentropy']
+LR = [1e-2] #[1e-2, 1e-3, 1e-4, 1e-5, 1e-6] use the full set for real finetuning
+LOSSES = ['categorical_crossentropy'] #['bcedice', 'binary_crossentropy']
 ACTIVATIONLASTS = ['softmax'] #using only softmax for now, replace with these options afterwards ['sigmoid','softmax', 'relu']
 MAXPOOLINGS = [2,4]
 FIRSTFILTERS = [8,16,32,64]
@@ -29,7 +27,7 @@ SEED = 10
 
 # early stopping hyperparameters
 PATIENCE = 10 # patience for early stopping, train for this many epochs w/ no improvement
-MONITOR = 'val_loss' # which metric is monitored to determine stoppage point and best weights
+MONITOR = 'val_loss' # this metric is monitored to determine stoppage point and best weights
 #todo rename optimization to something better
 OPTIMIZATION = 'min' # either min or max, depending on MONITOR
 
@@ -105,7 +103,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
 
                                         current_f1 = results.history['val_f1_m'][index]
                                         
-                                        show_losses(results, index + 1 + PATIENCE, index + 1, modelNameFull)
+                                        show_losses(results, index + PATIENCE, index, modelNameFull)#TODO should index be incremented here?
                                         
                                         if current_f1 > best_f1:
                                             best_f1 = current_f1

@@ -5,8 +5,7 @@ import losses
 import metrics
 #TODO
 '''
-- fix get_loss_func to work with categorical crossentropy (and be more generic, might need to_categorical (whiteboard))
-- implement early stopping
+- once done the new loss functions, need to add them to get_loss_func
 - clean up
 - update model call to keras 2 API?
 '''
@@ -121,6 +120,6 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
     model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,
                                                                    metrics.jaccard_coef_int, metrics.dice_coef,
                                                                    metrics.recall_m, metrics.precision_m, metrics.f1_m,
-                                                                   #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet
+                                                                   metrics.inter_tissue_accuracy, #this is new, and doesn't work yet TODO1
                                                                    'accuracy'])
     return model

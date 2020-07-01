@@ -4,7 +4,8 @@ from keras.backend.tensorflow_backend import _to_tensor
 import keras as K
 #TODO
 '''
-- add F1 score for macro averaging as a loss?
+- add new losses
+- find keras source code for categorical_crossentropy and change it!
 '''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
