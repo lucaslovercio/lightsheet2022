@@ -65,7 +65,8 @@ def get_pairs_from_paths(images_path, segs_path):
 def get_image_array(img):
     """ Load image array from input """
     img = img.astype(np.float32)
-    img[:, :] -= 116.779
+    img /= 255.0# doesn't seem to make any significant difference
+    #img -= img.mean()###
     img = img.reshape(img.shape + (1,))
 
     return img

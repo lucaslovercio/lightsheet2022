@@ -50,8 +50,6 @@ def dice_coef(y_true, y_pred, smooth=1.0):#used in losses
 
 #below here are from Lucas
 #TODO does the m stand for? (ask lucas)
-#TODO add beta to the f1 score?
-#TODO move the sums from in the recall and precision functions to in the f1 function
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))

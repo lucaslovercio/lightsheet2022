@@ -1,18 +1,20 @@
 import matplotlib.pyplot as plt
+# the commented lines below are a possible solution to thread issues caused by tkinter
+# import matplotlib
+# matplotlib.use('Agg')
+# from matplotlib import pyplot as plt
 import os
 import numpy as np
 import skimage.io as io
 import cv2
 #TODO
 '''
-- fix up save models txt
-- collapse the model summary and saved text file to the same folder
 - maybe change the saving method so that it saves all the output for a given model in its own folder
 - need to add some documentation
 '''
 
 '''
-Name: show_losses
+Name: plot_learning_curves
 Purpose:
 This function creates and saves plots of model performance metrics.
 Arguments:
@@ -72,31 +74,35 @@ def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
     plt.close()
     
 
-#TODO1 add in new metrics
-def save_losses_txt(model, history, filename, history_index):
+
+def save_summary_txt(model, history, filename, history_index):
     val_f1 = history.history['val_f1_m']
     val_recall = history.history['val_recall_m']
     val_precision = history.history['val_precision_m']
     val_acc = history.history['val_accuracy']
+    val_bin_acc = history.history['val_background_accuracy']
 
     f1 = history.history['f1_m']
     recall = history.history['recall_m']
     precision = history.history['precision_m']
     acc = history.history['accuracy']
+    bin_acc = history.history['background_accuracy']
     
-    filename_txt = filename + '.txt'#_model.txt?
-    f = open(filename_txt, 'a')# a or w?
+    filename_txt = filename + '.txt'
+    f = open(filename_txt, 'a')
     output_text = 'Validation Set Metrics:\n\n' \
-        + 'Val F1:\t' + str(val_f1[-1]) \
+        + 'Val F1:\t' + str(val_f1[history_index]) \
         + '\n' +  'Val Recall:\t' + str(val_recall[history_index]) \
         + '\n' +  'Val Precision:\t' + str(val_precision[history_index]) \
         + '\n' +  'Val Accuracy:\t' + str(val_acc[history_index]) \
+        + '\n' +  'Val Binary Accuracy:\t' + str(val_bin_acc[history_index]) \
         \
         + '\n\nTraining Set Metrics:\n\n' \
-        + 'F1:\t\t' + str(f1[-1]) \
+        + 'F1:\t\t' + str(f1[history_index]) \
         + '\n' +  'Recall:\t\t' + str(recall[history_index]) \
         + '\n' +  'Precision:\t' + str(precision[history_index]) \
         + '\n' +  'Accuracy:\t' + str(acc[history_index]) \
+        + '\n' +  'Binary Accuracy:\t' + str(bin_acc[history_index])
         
     f.write(output_text)
 
@@ -106,15 +112,3 @@ def save_losses_txt(model, history, filename, history_index):
     f.writelines('\n\nModel summary:  ' + filename  +'\n\n')
     f.writelines(short_model_summary + '\n\n')
     f.close()
-
-# deprecated
-def saveModelSummary(model, filename):
-    ''' save in a .txt file the values obtained from training'''
-    name = filename + '_model.txt'
-    arch = open(name, 'w')
-    stringlist = []
-    model.summary(print_fn=lambda x: stringlist.append(x))
-    short_model_summary = "\n".join(stringlist)
-    arch.writelines('Model summary:  ' + filename  +'\n' + '\n')
-    arch.writelines(short_model_summary + '\n' + '\n')
-    arch.close()

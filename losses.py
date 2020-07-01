@@ -1,15 +1,11 @@
-#import keras.backend as K
 import tensorflow as tf
 from keras.backend.tensorflow_backend import _to_tensor
-#import keras as K
 #TODO
 '''
 '''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
-#from keras.losses import binary_crossentropy
 
-#dice_coef_loss_bce(y, p, dice=0.8, bce=0.2, bootstrapping='soft', alpha=1)
 import metrics
 
 def dice_coef_loss(y_true, y_pred):

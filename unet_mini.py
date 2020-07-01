@@ -5,7 +5,6 @@ import losses
 import metrics
 #TODO
 '''
-- once done the new loss functions, need to add them to get_loss_func
 - clean up
 - update model call to keras 2 API?
 '''
@@ -120,7 +119,7 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
     model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,
                                                                    metrics.jaccard_coef_int, metrics.dice_coef,
                                                                    metrics.recall_m, metrics.precision_m, metrics.f1_m,
-                                                                   #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet TODO1
-                                                                   metrics.background_accuracy, #TODO1 new, doesn't yet work?
+                                                                   #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet
+                                                                   metrics.background_accuracy, #TODO new, doesn't yet work?
                                                                    'accuracy'])
     return model

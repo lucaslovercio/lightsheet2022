@@ -1,6 +1,6 @@
 from data_loader import image_segmentation_generator
 from unet_mini import unet
-from save_training import plot_learning_curves, save_losses_txt#, saveModelSummary
+from save_training import plot_learning_curves, save_summary_txt#, saveModelSummary
 import os
 
 from keras.callbacks import EarlyStopping
@@ -31,14 +31,15 @@ MONITOR = 'val_loss' # this metric is monitored to determine stoppage point and 
 #todo rename optimization to something better
 OPTIMIZATION = 'min' # either min or max, depending on MONITOR
 
-train_frames_path   = 'TissueDataset/Training/Original'
-train_masks_path    = 'TissueDataset/Training/Mask'
+# train_frames_path   = 'TissueDataset/Training/Original'
+# train_masks_path    = 'TissueDataset/Training/Mask'
 
-val_frames_path     = 'TissueDataset/Validation/Original'
-val_masks_path      = 'TissueDataset/Validation/Mask'
+# val_frames_path     = 'TissueDataset/Validation/Original'
+# val_masks_path      = 'TissueDataset/Validation/Mask'
 
 def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path):
     best_f1 = -1
+    counter = 0#cut, counter just tracks how many models have been trained
     for maxpool in MAXPOOLINGS:
         for activationLast in ACTIVATIONLASTS:
             for IMG_SIZE in IMG_SIZES:
@@ -70,7 +71,8 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                         
                                         # print out a summary of the model
                                         modelUnet.summary()
-                                        # print out some indication of epoch # here as well
+                                        counter += 1#cut
+                                        print('now training the', counter, 'th model')#cut
                                         
                                         # train the model
                                         
@@ -105,17 +107,12 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                         # the best F1 score achieved while training this model
                                         current_f1 = results.history['val_f1_m'][best_model_epoch]
 
-                                        # save learning curves
-                                        #show_losses(results, total_epochs, best_model_epoch, model_name_full)
-                                        #TODO1 rename save_losses_txt, summary
                                         if current_f1 > best_f1:
                                             best_f1 = current_f1
                                             # save learning curves
                                             plot_learning_curves(results, total_epochs, best_model_epoch, model_name_full)
                                             # save metrics and model summary
-                                            save_losses_txt(modelUnet, results, model_name_full, best_model_epoch)###
-                                            # save model summary TODO cut
-                                            # saveModelSummary(modelUnet, model_name_full) TODO cut
+                                            save_summary_txt(modelUnet, results, model_name_full, best_model_epoch)
                                             # save trained weights
                                             model_file_full = model_name_full + '.h5'
                                             modelUnet.save(model_file_full)
