@@ -1,22 +1,14 @@
 from keras import backend as K
-import tensorflow as tf # this is new, might not be needed if we get the confusion matrix from somewhere else
-from sklearn.metrics import confusion_matrix # new, for confusion matrix
-SMOOTH_LOSS = 1e-12
+import tensorflow as tf
+#from sklearn.metrics import confusion_matrix # new, for confusion matrix
+SMOOTH_LOSS = 1e-12 #TODO should maybe replace smooth with a call to K.epsilon()?
 
 #TODO
 '''
-- understand/document the existing functions
+- does existing Fscore MacroAveraging work?
+'''
 
-- add in Fscore MacroAveraging
- - should it be batchwise or epoch wise using a callback?
- - is it not already good for macro averaging?
-
-- accuracy of tissue vs. not tissue
-- need to retrieve the confusion matrix, and not the y_true and y_pred (disposition of true and predicted labels, rows?, columns?
-
-ideas:
-keras has a metric called confusion_matrix (how can this be visualized in matplotlib?)
-
+'''
 custom metrics:
 need to take y_true and y_pred as arguments
 need to return a single tensor value
@@ -49,7 +41,7 @@ def jacard_coef_flat(y_true, y_pred):
     return (intersection + SMOOTH_LOSS) / (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + SMOOTH_LOSS)
 
 
-def dice_coef(y_true, y_pred, smooth=1.0):
+def dice_coef(y_true, y_pred, smooth=1.0):#used in losses
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -58,7 +50,6 @@ def dice_coef(y_true, y_pred, smooth=1.0):
 
 #below here are from Lucas
 #TODO does the m stand for? (ask lucas)
-#TODO insert < y_true = K.ones_like(y_true) > ?
 #TODO add beta to the f1 score?
 #TODO move the sums from in the recall and precision functions to in the f1 function
 def recall_m(y_true, y_pred):
@@ -73,12 +64,12 @@ def precision_m(y_true, y_pred):
     precision = true_positives / (predicted_positives + K.epsilon())
     return precision
 
-def f1_m(y_true, y_pred):
+def f1_m(y_true, y_pred, beta=1.0):
     precision = precision_m(y_true, y_pred)
     recall = recall_m(y_true, y_pred)
-    return 2*((precision*recall)/(precision+recall+K.epsilon()))
+    return (1 + beta**2) * ((precision * recall) / ((beta**2 * precision) + recall + K.epsilon()))
 
-#below here are new
+#TODO deprecated, ask if this is at all useful
 def inter_tissue_accuracy(y_true, y_pred):
     #confusion = tf.math.confusion_matrix(y_true, y_pred)
     #confusion = confusion_matrix(y_true.argmax(axis=1), y_pred.argmax(axis=1))###
@@ -86,12 +77,11 @@ def inter_tissue_accuracy(y_true, y_pred):
     #y_true = K.ones_like(y_true)?
     #print("shape###################################", y_pred.shape, y_pred)###
 
-    #TODO1 working here
     tissue_true = y_true[:,:,:,1:]#cut away the background class
     tissue_pred = y_pred[:,:,:,1:]#cut away the background class
     
-    #TODO if the output is probabilistic we need something like the line below
-    # tissue_pred = K.round(K.clip(tissue_pred, 0, 1))
+    #TODO if the output isn't probabilistic we don't need the line below
+    tissue_pred = K.round(K.clip(tissue_pred, 0, 1))
     
 
     boolean_tensor = tf.math.equal(tissue_true, tissue_pred)
@@ -99,16 +89,36 @@ def inter_tissue_accuracy(y_true, y_pred):
     correct_count = tf.math.reduce_sum(correct_count)
 
     total_count = tf.size(tissue_pred)
+    #print(total_count)###
 
     #seems that this division automatically converts to float64
-    print(correct_count / total_count)###
+    #print(correct_count / total_count)###
     
-    return y_true
-    
+    #return y_true TODO1 original
+    return correct_count / total_count
 
+
+def background_accuracy(y_true, y_pred):
+    background_true = y_true[:,:,:,0]#cut away the tissue
+    background_pred = y_pred[:,:,:,0]#cut away the tissue
+    
+    #TODO1 if the output isn't probabilistic we don't need the line below
+    background_pred = K.round(K.clip(background_pred, 0, 1))
+    
+    
+    boolean_tensor = tf.math.equal(background_true, background_pred)
+    correct_count = tf.dtypes.cast(boolean_tensor, tf.int32)
+    correct_count = tf.math.reduce_sum(correct_count)
+    
+    total_count = tf.size(background_true)
+    
+    return correct_count / total_count
+
+
+#TODO this function is deprecated
 def f1_M(y_true, y_pred, beta=1):
     # TODO account for these strange shapes
-    # it seems y_true has shape (None, None, None, None)
+    # it seems y_true has shape (None, None, None, None) in training is really (16, 128, 128, 3)
     # it seems y_pred has shape (None, 128, 128, 3)
     # tensorflow uses None to mark a shape it doesn't know, but how doesn't it know?
     # current theory is that converting to numpy arrays is impossible, and the original implementation does the right thing

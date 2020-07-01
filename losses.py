@@ -1,15 +1,13 @@
 #import keras.backend as K
 import tensorflow as tf
 from keras.backend.tensorflow_backend import _to_tensor
-import keras as K
+#import keras as K
 #TODO
 '''
-- add new losses
-- find keras source code for categorical_crossentropy and change it!
 '''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
-from keras.losses import binary_crossentropy
+#from keras.losses import binary_crossentropy
 
 #dice_coef_loss_bce(y, p, dice=0.8, bce=0.2, bootstrapping='soft', alpha=1)
 import metrics
@@ -31,7 +29,7 @@ def bootstrapped_crossentropy(y_true, y_pred, bootstrap_type='hard', alpha=0.95)
     else:
         bootstrap_target_tensor = alpha * target_tensor + (1.0 - alpha) * tf.cast(
             tf.sigmoid(prediction_tensor) > 0.5, tf.float32)
-    return tf.keras.backend.mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    return tf.keras.backend.mean(tf.nn.sigmoid_cross_entropy_with_logits(#TODO not sure if this should be treating prediction_tensor as logits
         labels=bootstrap_target_tensor, logits=prediction_tensor))
 
 def dice_coef_loss_bce(y_true, y_pred):

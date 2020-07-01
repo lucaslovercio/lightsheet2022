@@ -67,6 +67,7 @@ def get_image_array(img):
     img = img.astype(np.float32)
     img[:, :] -= 116.779
     img = img.reshape(img.shape + (1,))
+
     return img
 
 
