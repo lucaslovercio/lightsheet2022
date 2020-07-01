@@ -28,7 +28,7 @@ Arguments:
 Outputs:
 Saves plots to the directory with the model weights.
 '''
-def show_losses(history, total_epochs, best_model_epoch, model_name):
+def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
 
     # plot training and validation accuracy values
     plt.plot(history.history['accuracy'], marker='o', markevery=[best_model_epoch])
@@ -73,7 +73,7 @@ def show_losses(history, total_epochs, best_model_epoch, model_name):
     
 
 #TODO1 add in new metrics
-def save_losses_txt(history, filename, history_index):
+def save_losses_txt(model, history, filename, history_index):
     val_f1 = history.history['val_f1_m']
     val_recall = history.history['val_recall_m']
     val_precision = history.history['val_precision_m']
@@ -84,8 +84,8 @@ def save_losses_txt(history, filename, history_index):
     precision = history.history['precision_m']
     acc = history.history['accuracy']
     
-    filename_txt = filename + '.txt'
-    f = open(filename_txt, 'a')
+    filename_txt = filename + '.txt'#_model.txt?
+    f = open(filename_txt, 'a')# a or w?
     output_text = 'Validation Set Metrics:\n\n' \
         + 'Val F1:\t' + str(val_f1[-1]) \
         + '\n' +  'Val Recall:\t' + str(val_recall[history_index]) \
@@ -97,11 +97,17 @@ def save_losses_txt(history, filename, history_index):
         + '\n' +  'Recall:\t\t' + str(recall[history_index]) \
         + '\n' +  'Precision:\t' + str(precision[history_index]) \
         + '\n' +  'Accuracy:\t' + str(acc[history_index]) \
-
         
     f.write(output_text)
+
+    stringlist = []
+    model.summary(print_fn=lambda x: stringlist.append(x))
+    short_model_summary = '\n'.join(stringlist)
+    f.writelines('\n\nModel summary:  ' + filename  +'\n\n')
+    f.writelines(short_model_summary + '\n\n')
     f.close()
 
+# deprecated
 def saveModelSummary(model, filename):
     ''' save in a .txt file the values obtained from training'''
     name = filename + '_model.txt'
