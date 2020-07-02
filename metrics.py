@@ -1,7 +1,7 @@
 from keras import backend as K
 import tensorflow as tf
 #from sklearn.metrics import confusion_matrix # new, for confusion matrix
-SMOOTH_LOSS = 1e-12 #TODO should maybe replace smooth with a call to K.epsilon()?
+uSMOOTH_LOSS = 1e-12 #TODO should maybe replace smooth with a call to K.epsilon()?
 
 #TODO
 '''
