@@ -1,4 +1,4 @@
-from segment_image import assess_models
+from segment_image import assess_models, assess_models_in_folders
 from finetuning import finetuning_loop
 #TODO
 '''
@@ -20,4 +20,5 @@ test_frame_path = 'TissueDataset/Test/Original'
 test_mask_path = 'TissueDataset/Test/Mask'
 output_dir = 'predictions_dev/'
 
-assess_models(history_dir, test_frame_path, test_mask_path, output_dir)
+#assess_models(history_dir, test_frame_path, test_mask_path, output_dir)
+assess_models_in_folders(history_dir, test_frame_path, test_mask_path, output_dir)

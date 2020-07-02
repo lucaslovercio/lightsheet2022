@@ -5,9 +5,8 @@ import numpy as np
 import cv2
 #TODO:
 '''
-- run a finetuning loop without the mean subtraction to see if it makes a difference, remove it or replace it if it doesn't
 - add in data augmentation here?
-- need to use a normalization method that makes more sense
+- decide whether or not the normalization by division is good enough
 - add documentation to this file
 '''
 

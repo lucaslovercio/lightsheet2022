@@ -5,6 +5,7 @@ from data_loader import get_image_array, get_pairs_from_paths
 import os
 #TODO
 '''
+- add documentation
 - save loss curves w/ model somehow
 - save text w/ learning curves and test images
 '''
@@ -102,3 +103,10 @@ def assess_models(models_dir, frame_path, mask_path, outputs_dir):
     #assess the models
     for i in range(len(model_paths)):
         assess_model(model_paths[i], frame_path, mask_path, output_folders[i])
+
+def assess_models_in_folders(top_dir, frame_path, mask_path, outputs_dir):
+    model_dirs = []
+    for file in os.listdir(top_dir):
+        path = os.path.join(top_dir, file)
+        if os.path.isdir(path):
+            assess_models(path + '/', frame_path, mask_path, outputs_dir)

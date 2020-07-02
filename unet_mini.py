@@ -120,6 +120,6 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
                                                                    metrics.jaccard_coef_int, metrics.dice_coef,
                                                                    metrics.recall_m, metrics.precision_m, metrics.f1_m,
                                                                    #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet
-                                                                   metrics.background_accuracy, #TODO new, doesn't yet work?
+                                                                   metrics.background_accuracy, #TODO new
                                                                    'accuracy'])
     return model

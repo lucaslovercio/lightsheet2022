@@ -9,7 +9,6 @@ import skimage.io as io
 import cv2
 #TODO
 '''
-- maybe change the saving method so that it saves all the output for a given model in its own folder
 - need to add some documentation
 '''
 
@@ -20,8 +19,8 @@ This function creates and saves plots of model performance metrics.
 Arguments:
 - history:
  The training history Keras saves during the call to model.fit.
-- total_epochs:
- The total number of epochs the model was run for.
+- last_epoch:
+ The total number of epochs the model was run for - 1 (start with epoch 0).
 - best_model_epoch:
  The epoch at which the model's weights was done training. Early stopping caused several 
  epochs to run after this point, which is marked with a dot on the plots.
@@ -30,7 +29,7 @@ Arguments:
 Outputs:
 Saves plots to the directory with the model weights.
 '''
-def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
+def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
 
     # plot training and validation accuracy values
     plt.plot(history.history['accuracy'], marker='o', markevery=[best_model_epoch])
@@ -41,7 +40,7 @@ def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Train Acc', 'Val Acc', 'Train Binary Acc', 'Val Binary Acc'], loc='upper left')# changed
-    plt.xlim([0,total_epochs])
+    plt.xlim([0,last_epoch])
     plt.ylim(0,1)
     #plt.show()
     plt.savefig(model_name + '_acc.png')
@@ -54,7 +53,7 @@ def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train Loss', 'Val Loss'], loc='lower left')
-    plt.xlim([0,total_epochs])
+    plt.xlim([0,last_epoch])
     plt.ylim(0, max(history.history['loss']) + 1)
     #plt.show()
     plt.savefig(model_name + '_losses.png')
@@ -67,7 +66,7 @@ def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
     plt.ylabel('F1')
     plt.xlabel('Epoch')
     plt.legend(['Train F1', 'Val F1'], loc='lower left')
-    plt.xlim([0, total_epochs])
+    plt.xlim([0, last_epoch])
     plt.ylim(0,1)
     #plt.show()
     plt.savefig(model_name + '_f1.png')
@@ -75,7 +74,7 @@ def plot_learning_curves(history, total_epochs, best_model_epoch, model_name):
     
 
 
-def save_summary_txt(model, history, filename, history_index):
+def save_summary_txt(model, history, filename, history_index=-1):
     val_f1 = history.history['val_f1_m']
     val_recall = history.history['val_recall_m']
     val_precision = history.history['val_precision_m']
@@ -109,6 +108,18 @@ def save_summary_txt(model, history, filename, history_index):
     stringlist = []
     model.summary(print_fn=lambda x: stringlist.append(x))
     short_model_summary = '\n'.join(stringlist)
-    f.writelines('\n\nModel summary:  ' + filename  +'\n\n')
+    f.writelines('\n\nModel summary:  ' + filename[filename.rfind('/')+1:]  +'\n\n')
     f.writelines(short_model_summary + '\n\n')
     f.close()
+
+# save the learning curves, summary, and model weights in a new folder
+def save_model(model, history, last_epoch, best_model_epoch, model_name, path):
+    subdir = path + model_name + '/'
+    try:
+        os.mkdir(subdir)
+    except FileExistsError:
+        pass
+    full_filename = subdir + model_name
+    save_summary_txt(model, history, full_filename, last_epoch)
+    plot_learning_curves(history, last_epoch, best_model_epoch, full_filename)
+    model.save(full_filename + '.h5')

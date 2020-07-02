@@ -49,7 +49,6 @@ def dice_coef(y_true, y_pred, smooth=1.0):#used in losses
 
 
 #below here are from Lucas
-#TODO does the m stand for? (ask lucas)
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
@@ -92,7 +91,7 @@ def inter_tissue_accuracy(y_true, y_pred):
     #seems that this division automatically converts to float64
     #print(correct_count / total_count)###
     
-    #return y_true TODO1 original
+    #return y_true 
     return correct_count / total_count
 
 
