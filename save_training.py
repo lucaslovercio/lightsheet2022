@@ -9,7 +9,9 @@ import skimage.io as io
 import cv2
 #TODO
 '''
+- debug why it is that f1 == accuracy
 - need to add some documentation
+- consider changing what color and linetypes are used to maek the learning curves
 '''
 
 '''
@@ -60,17 +62,59 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     plt.close()
 
     # plot training and validation f1 scores
-    plt.plot(history.history['f1_m'], marker='o', markevery=[best_model_epoch])
-    plt.plot(history.history['val_f1_m'], marker='o', markevery=[best_model_epoch])
+    plt.plot(history.history['f1_m'], 'b-|', markevery=[best_model_epoch])
+    plt.plot(history.history['f1_M'], 'b--|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_m'], 'r-|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_M'], 'r--|', markevery=[best_model_epoch])
     plt.title('Model F1 metrics')
     plt.ylabel('F1')
     plt.xlabel('Epoch')
-    plt.legend(['Train F1', 'Val F1'], loc='lower left')
+    plt.legend(['Train F1 Micro', 'Train F1 Macro', 'Val F1 Micro', 'Val F1 Macro'], loc='lower left')
     plt.xlim([0, last_epoch])
     plt.ylim(0,1)
     #plt.show()
     plt.savefig(model_name + '_f1.png')
     plt.close()
+
+    # plot in depth recall and precision for validation and training TODO should cut this graph
+    plt.plot(history.history['recall_m'], 'b-|', markevery=[best_model_epoch])
+    plt.plot(history.history['precision_m'], 'b--|', markevery=[best_model_epoch])
+    plt.plot(history.history['recall_M'], 'b:|', markevery=[best_model_epoch])
+    plt.plot(history.history['precision_M'], 'b-.|', markevery=[best_model_epoch])    
+    plt.plot(history.history['val_recall_m'], 'r-|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_m'], 'r--|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_recall_M'], 'r:|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_M'], 'r-.|', markevery=[best_model_epoch])    
+    plt.ylabel('Measure')
+    plt.xlabel('Epoch')
+    plt.legend(['Train Recall Micro', 'Train Precision Micro', 'Train Recall Macro', 'Train Precision Macro', \
+                'Val Recall Micro', 'Val Precision Micro', 'Val Recall Macro', 'Val Precision Macro'], loc='lower left')
+    plt.xlim([0, last_epoch])
+    plt.ylim(0,1)
+    #plt.show()
+    plt.savefig(model_name + '_prec_rec.png')
+    plt.close()
+
+    #plot precision and recall by class on the validation set
+    plt.plot(history.history['val_recall_0'], 'y-|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_0'], 'y--|', markevery=[best_model_epoch])
+    ###
+    plt.plot(history.history['val_recall_1'], 'm-|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_1'], 'm--|', markevery=[best_model_epoch])
+    ###
+    plt.plot(history.history['val_recall_2'], 'g-|', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_2'], 'g--|', markevery=[best_model_epoch])
+    ###
+    plt.ylabel('Measure')
+    plt.xlabel('Epoch')
+    plt.legend(['Reca B', 'Prec B', 'Reca N', 'Prec N', 'Reca M', 'Prec M'], loc='lower left')#B=bckgrnd, N=neur, M=mesen
+    plt.xlim([0, last_epoch])
+    plt.ylim(0,1)
+    #plt.show()
+    plt.savefig(model_name + '_pr_classes.png')
+    plt.close()
+    
+
     
 
 

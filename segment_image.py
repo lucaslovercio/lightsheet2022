@@ -8,6 +8,7 @@ import os
 - add documentation
 - save loss curves w/ model somehow
 - save text w/ learning curves and test images
+- should rename this file predict
 '''
 
 '''

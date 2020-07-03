@@ -29,8 +29,8 @@ def bootstrapped_crossentropy(y_true, y_pred, bootstrap_type='hard', alpha=0.95)
         labels=bootstrap_target_tensor, logits=prediction_tensor))
 
 def dice_coef_loss_bce(y_true, y_pred):
-    dice = 0.8
-    bce = 0.2
+    dice = 0.8# change these weights
+    bce = 0.2# change these weights
     bootstrapping = 'hard'
     alpha = 1.
     return bootstrapped_crossentropy(y_true, y_pred, bootstrapping, alpha) * bce + dice_coef_loss(y_true, y_pred) * dice
