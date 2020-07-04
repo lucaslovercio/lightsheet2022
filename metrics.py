@@ -5,6 +5,7 @@ SMOOTH_LOSS = 1e-12 #TODO should maybe replace smooth with a call to K.epsilon()
 #TODO
 '''
 - double check and understand Olga's jaccard and dice metrics
+- debug why there's no difference b/w training and validation F1 when computed on whole epochs
 - look into combining f1_m and f1_M into a function that's passed a flag 'macro' or 'micro'
 - if needed, implement epoch-wise precision and recall metrics (as stateful custom metrics)
 - if needed, implement epoch-wise accuracy etc. metrics (as stateful custom metrics)

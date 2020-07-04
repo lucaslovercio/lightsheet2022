@@ -66,7 +66,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                          dropOutLayerFlag=dp)
                                         
                                         # print out a summary of the model
-                                        modelUnet.summary()
+                                        #modelUnet.summary() TODO can replace this summary
                                         counter += 1#cut
                                         print('now training the', counter, 'th model')#cut
                                         
