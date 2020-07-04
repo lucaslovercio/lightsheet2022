@@ -120,9 +120,8 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
     model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,
                                                                    metrics.jaccard_coef_int, metrics.dice_coef,
                                                                    metrics.recall_m, metrics.precision_m, metrics.f1_m,
-                                                                   #metrics.inter_tissue_accuracy, #this is new, and doesn't work yet
-                                                                   metrics.background_accuracy, #TODO newish
-                                                                   #TODO1 below here are new metrics
+                                                                   metrics.binary_accuracy, #newish
+                                                                   #below here are new metrics
                                                                    metrics.f1_M,
                                                                    metrics.recall_M,
                                                                    metrics.precision_M,
@@ -131,6 +130,7 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
                                                                    metrics.recall_1,
                                                                    metrics.precision_1,
                                                                    metrics.recall_2,
-                                                                   metrics.precision_2, 
+                                                                   metrics.precision_2,
+                                                                   metrics.tissue_type_accuracy,
                                                                    'accuracy'])
     return model

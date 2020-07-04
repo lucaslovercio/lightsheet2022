@@ -4,8 +4,6 @@ SMOOTH_LOSS = 1e-12 #TODO should maybe replace smooth with a call to K.epsilon()
 
 #TODO
 '''
-- rename background accuracy to something better
-- delete deprecated metrics
 - double check and understand Olga's jaccard and dice metrics
 - look into combining f1_m and f1_M into a function that's passed a flag 'macro' or 'micro'
 '''
@@ -127,45 +125,32 @@ def recall_2(y_true, y_pred):
 def precision_2(y_true, y_pred):
     return precision_m(y_true[:,:,:,2], y_pred[:,:,:,2])
 
+# end of recall and precision for specific classes
 
+# accuracy b/w the two types of tissues
+def tissue_type_accuracy(y_true, y_pred):
 
+    ###
+    background_mask = 1.0 - y_true[:,:,:,0]
+    tissue_true = tf.math.argmax(y_true[:,:,:,1:], axis=-1)
+    #tissue_true = tf.boolean_mask(tissue_true, background_mask)
+    tissue_pred = tf.math.argmax(y_pred[:,:,:,1:], axis=-1)
+    #tissue_pred = tf.boolean_mask(tissue_pred, background_mask)
 
+    true_positive_mat = tf.boolean_mask(tf.cast(tf.equal(tissue_true, tissue_pred), tf.float32), background_mask)
+    true_positives = tf.math.reduce_sum(true_positive_mat)
+    total_predictions = tf.cast(tf.size(true_positive_mat), tf.float32)
+    return true_positives / total_predictions
+    #true_positives = tf.math.reduce_sum(tf.cast(tf.equal(tissue_true, tissue_pred), dtype=float_32))
+    # then divide true positives by the size of tissue_true (or tissue pred
 
-
-
-#TODO fix this up, want accuracy b/w the two types of tissues
-def inter_tissue_accuracy(y_true, y_pred):
-    #confusion = tf.math.confusion_matrix(y_true, y_pred)
-    #confusion = confusion_matrix(y_true.argmax(axis=1), y_pred.argmax(axis=1))###
-    #print("confusion:", confusion)###
-    #y_true = K.ones_like(y_true)?
-    #print("shape###################################", y_pred.shape, y_pred)###
-
-    tissue_true = y_true[:,:,:,1:]#cut away the background class
-    tissue_pred = y_pred[:,:,:,1:]#cut away the background class
-    
-    #TODO if the output isn't probabilistic we don't need the line below
-    tissue_pred = K.round(K.clip(tissue_pred, 0, 1))
-    
-
-    boolean_tensor = tf.math.equal(tissue_true, tissue_pred)
-    correct_count = tf.dtypes.cast(boolean_tensor, tf.int32)
-    correct_count = tf.math.reduce_sum(correct_count)
-
-    total_count = tf.size(tissue_pred)
-    #print(total_count)###
-
-    #seems that this division automatically converts to float64
-    #print(correct_count / total_count)###
-    
-    #return y_true 
-    return correct_count / total_count
-
-#TODO rename this
-def background_accuracy(y_true, y_pred):
-    background_true = y_true[:,:,:,0]#cut away the tissue
-    background_pred = y_pred[:,:,:,0]#cut away the tissue
-    background_pred = K.round(K.clip(background_pred, 0, 1))#turn probabilities into predictions
+# accuracy of tissue vs. background segmentations
+def binary_accuracy(y_true, y_pred):
+    #cut away the tissue
+    background_true = y_true[:,:,:,0]
+    background_pred = y_pred[:,:,:,0]
+    #turn probabilities into predictions
+    background_pred = K.round(K.clip(background_pred, 0, 1))
     
     #TODO re-examine this and try to replace tf.math. w/ K.
     boolean_tensor = tf.math.equal(background_true, background_pred)

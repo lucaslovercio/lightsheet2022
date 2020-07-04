@@ -9,9 +9,9 @@ import skimage.io as io
 import cv2
 #TODO
 '''
-- debug why it is that f1 == accuracy
 - need to add some documentation
-- consider changing what color and linetypes are used to maek the learning curves
+- consider changing what color and linetypes are used to make the learning curves
+- add a more thorough set of metrics to the saved text file
 '''
 
 '''
@@ -34,14 +34,16 @@ Saves plots to the directory with the model weights.
 def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
 
     # plot training and validation accuracy values
-    plt.plot(history.history['accuracy'], marker='o', markevery=[best_model_epoch])
-    plt.plot(history.history['val_accuracy'], marker='o', markevery=[best_model_epoch])
-    plt.plot(history.history['background_accuracy'], marker='o', markevery=[best_model_epoch])# new
-    plt.plot(history.history['val_background_accuracy'], marker='o', markevery=[best_model_epoch])# new
-    plt.title('Model accuracy')
+    plt.plot(history.history['accuracy'], 'C0-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_accuracy'], 'C0--o', markevery=[best_model_epoch])
+    plt.plot(history.history['binary_accuracy'], 'C1-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_binary_accuracy'], 'C1--o', markevery=[best_model_epoch])
+    plt.plot(history.history['tissue_type_accuracy'], 'C2-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_tissue_type_accuracy'], 'C2--o', markevery=[best_model_epoch])
+    plt.title('Model Accuracy')
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
-    plt.legend(['Train Acc', 'Val Acc', 'Train Binary Acc', 'Val Binary Acc'], loc='upper left')# changed
+    plt.legend(['Train Acc', 'Val Acc', 'Train Binary Acc', 'Val Binary Acc', 'Train Tissue Acc', 'Val Tissue Acc'], loc='upper left')
     plt.xlim([0,last_epoch])
     plt.ylim(0,1)
     #plt.show()
@@ -51,7 +53,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     # plot training and validation loss values
     plt.plot(history.history['loss'], marker='o', markevery=[best_model_epoch])
     plt.plot(history.history['val_loss'], marker='o', markevery=[best_model_epoch])
-    plt.title('Model loss')
+    plt.title('Model Loss')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train Loss', 'Val Loss'], loc='lower left')
@@ -66,7 +68,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     plt.plot(history.history['f1_M'], 'b--|', markevery=[best_model_epoch])
     plt.plot(history.history['val_f1_m'], 'r-|', markevery=[best_model_epoch])
     plt.plot(history.history['val_f1_M'], 'r--|', markevery=[best_model_epoch])
-    plt.title('Model F1 metrics')
+    plt.title('Model F1 Metrics')
     plt.ylabel('F1')
     plt.xlabel('Epoch')
     plt.legend(['Train F1 Micro', 'Train F1 Macro', 'Val F1 Micro', 'Val F1 Macro'], loc='lower left')
@@ -98,13 +100,11 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     #plot precision and recall by class on the validation set
     plt.plot(history.history['val_recall_0'], 'y-|', markevery=[best_model_epoch])
     plt.plot(history.history['val_precision_0'], 'y--|', markevery=[best_model_epoch])
-    ###
     plt.plot(history.history['val_recall_1'], 'm-|', markevery=[best_model_epoch])
     plt.plot(history.history['val_precision_1'], 'm--|', markevery=[best_model_epoch])
-    ###
     plt.plot(history.history['val_recall_2'], 'g-|', markevery=[best_model_epoch])
     plt.plot(history.history['val_precision_2'], 'g--|', markevery=[best_model_epoch])
-    ###
+    plt.title('Model Precision and Recall')
     plt.ylabel('Measure')
     plt.xlabel('Epoch')
     plt.legend(['Reca B', 'Prec B', 'Reca N', 'Prec N', 'Reca M', 'Prec M'], loc='lower left')#B=bckgrnd, N=neur, M=mesen
@@ -123,13 +123,13 @@ def save_summary_txt(model, history, filename, history_index=-1):
     val_recall = history.history['val_recall_m']
     val_precision = history.history['val_precision_m']
     val_acc = history.history['val_accuracy']
-    val_bin_acc = history.history['val_background_accuracy']
+    val_bin_acc = history.history['val_binary_accuracy']
 
     f1 = history.history['f1_m']
     recall = history.history['recall_m']
     precision = history.history['precision_m']
     acc = history.history['accuracy']
-    bin_acc = history.history['background_accuracy']
+    bin_acc = history.history['binary_accuracy']
     
     filename_txt = filename + '.txt'
     f = open(filename_txt, 'a')

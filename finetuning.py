@@ -9,6 +9,7 @@ import numpy as np
 #TODO
 '''
 - add proper documentation to this function
+- do I actually need to iterate over image sizes?
 '''
 
 # hyperparameters
