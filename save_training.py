@@ -12,6 +12,7 @@ import cv2
 - need to add some documentation
 - consider changing what color and linetypes are used to make the learning curves
 - add a more thorough set of metrics to the saved text file
+- add a boolean flag "unique" to plot learning curves, which determines whether or not the entire model name is in the saved image names
 '''
 
 '''
@@ -113,7 +114,20 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     #plt.show()
     plt.savefig(model_name + '_pr_classes.png')
     plt.close()
-    
+
+    #plot micro and macro f1 evaluated on the training and validation set every epoch (not minibatch)
+    plt.plot(history.history['f1_micro'], 'C0-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_micro'], 'C1-o', markevery=[best_model_epoch])
+    plt.plot(history.history['f1_macro'], 'C0--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro'], 'C1--o', markevery=[best_model_epoch])
+    plt.title('F1 Scores on Epochs')
+    plt.ylabel('Measure')
+    plt.xlabel('Epoch')
+    plt.legend(['Train F1 Micro', 'Val F1 Micro', 'Train F1 Macro', 'Val F1 Macro'], loc='lower left')
+    plt.xlim([0, last_epoch])
+    plt.ylim(0,1)
+    plt.savefig(model_name + 'f1_epoch.png')
+    plt.close()
 
     
 

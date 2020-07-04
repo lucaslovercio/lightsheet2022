@@ -132,5 +132,7 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
                                                                    metrics.recall_2,
                                                                    metrics.precision_2,
                                                                    metrics.tissue_type_accuracy,
+                                                                   metrics.F1Micro(),
+                                                                   metrics.F1Macro(), 
                                                                    'accuracy'])
     return model
