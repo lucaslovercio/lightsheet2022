@@ -22,9 +22,8 @@ test_mask_path = 'TissueDataset/Test/Mask'
 output_dir = 'predictions_dev/'
 
 #assess_models(history_dir, test_frame_path, test_mask_path, output_dir)#deprecated
-#assess_models_in_folders(history_dir, test_frame_path, test_mask_path, output_dir)
+assess_models_in_folders(history_dir, test_frame_path, test_mask_path, output_dir)
 
 #visualize dataset
-#TODO1 get this working
-visualize_segmentation_dataset(train_frames_path, train_masks_path, 3)
+#visualize_segmentation_dataset(train_frames_path, train_masks_path, 'all')
 

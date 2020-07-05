@@ -3,10 +3,10 @@ import os
 import random
 import numpy as np
 import cv2
+from augmentation import augment_pair
 #TODO:
 '''
-- add in data augmentation here?
-- decide whether or not the normalization by division is good enough
+- once there's a decision about 8-bit vs 16-bit the division norm needs to be changed
 - add documentation to this file
 '''
 
@@ -89,14 +89,13 @@ def get_segmentation_array(img, nClasses, width, height):
 
     return seg_labels
 
-
+# TODO change im and seg to img and mask
 def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, output_height, output_width,
                                  norm_type=None, aug_type=None, deterministic=False):
 
-    #TODO1 working
+    #TODO try running the dataset visualizer w/o this part, see what happens
     if deterministic:
         random.seed(0)
-    #TODO1 working
 
     img_seg_pairs = get_pairs_from_paths(images_path, segs_path)
     random.shuffle(img_seg_pairs)
@@ -111,15 +110,9 @@ def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, 
             im = cv2.imread(im, cv2.IMREAD_ANYDEPTH)#new changed from 0
             seg = cv2.imread(seg, cv2.IMREAD_ANYDEPTH)#new changed from 0
 
-            #TODO1 here is where the Gupta applies augmentation
-            # if do_augment:
-            #     im, seg[:, :, 0] = augment_seg(im, seg[:, :, 0],
-            #                                    augmentation_name)
-            #end of gupta's augmentation
-            if aug_type is 'todo':
-                #TODO the augmentation of the image and segmentation
-                print('augmenting')#cut
-            #TODO1 working above
+            # apply augmentation
+            if aug_type is not None:
+                im, seg = augment_pair(im, seg, aug_type)
             
             X.append(get_image_array(im, norm_type))
             Y.append(get_segmentation_array(seg, n_classes, output_width, output_height))

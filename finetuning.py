@@ -34,7 +34,7 @@ MONITOR = 'val_loss' # this metric is monitored to determine stoppage point and 
 OPTIMIZATION = 'min' # either min or max, depending on MONITOR
 
 #preprocessing normalization hyperparameter
-NORM_TYPES = ['divide_and_sub'] # replace with these options: [None, 'divide', 'sub_mean', 'divide_and_sub']
+NORM_TYPES = [None] # replace with these options: [None, 'divide', 'sub_mean', 'divide_and_sub']
 
 
 def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path):
@@ -52,12 +52,12 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                         for normali in MORMALIZATIONS:
                                             
                                             # create generators for training and validation images
-                                            train_generator = image_segmentation_generator(#TODO1 add augmentation_type flags here
+                                            train_generator = image_segmentation_generator(
                                                 train_frames_path, train_masks_path,  BATCH_SIZE,  3,
-                                                128, 128, norm_type)
-                                            val_generator = image_segmentation_generator(#TODO1 add augmentation_type flags here
+                                                128, 128, norm_type, aug_type='all')
+                                            val_generator = image_segmentation_generator(
                                                 val_frames_path, val_masks_path,  BATCH_SIZE,  3,
-                                                128, 128, norm_type)
+                                                128, 128, norm_type, aug_type='all')
                                             
                                             NO_OF_TRAINING_IMAGES = len(os.listdir(train_frames_path ))
                                             NO_OF_VAL_IMAGES = len(os.listdir(val_frames_path))
