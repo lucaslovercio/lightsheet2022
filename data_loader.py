@@ -91,7 +91,12 @@ def get_segmentation_array(img, nClasses, width, height):
 
 
 def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, output_height, output_width,
-                                 norm_type=None, aug_type=None):
+                                 norm_type=None, aug_type=None, deterministic=False):
+
+    #TODO1 working
+    if deterministic:
+        random.seed(0)
+    #TODO1 working
 
     img_seg_pairs = get_pairs_from_paths(images_path, segs_path)
     random.shuffle(img_seg_pairs)

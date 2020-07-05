@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import skimage.io as io
-import cv2
+import cv2#TODO cut
 #TODO
 '''
 - need to add some documentation
