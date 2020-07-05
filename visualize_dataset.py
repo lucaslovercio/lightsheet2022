@@ -1,8 +1,11 @@
 import numpy as np
 import cv2
 from data_loader import image_segmentation_generator
+#TODO
+'''
+- document this function thoroughly
+'''
 
-#TODO make a kill key that ends the loop, maybe k
 def visualize_segmentation_dataset(frames_path, masks_path, aug_type):
     plain_generator = image_segmentation_generator(
         frames_path, masks_path,  1,  3,#batch_size = 1, num_classes = 3

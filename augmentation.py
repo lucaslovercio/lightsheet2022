@@ -4,9 +4,7 @@ from imgaug import augmenters as iaa
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 #TODO
 '''
-- test out whether to_deterministic needs to be changed during training (Gupta loads augs v/ strangely)
-- test out whether or not the full size images being 16-bit will cause problems
-- add contrast augmentation if it'll work
+
 '''
 
 # simple augmenter to perform horizontal and vertical flips on input at a rate of 50%
@@ -14,7 +12,7 @@ flip_aug = iaa.Sequential([
     iaa.Fliplr(0.5),
     iaa.Flipud(0.5)])
 
-# simple augmenter to apply Guassian blurrin
+# simple augmenter to apply Guassian blurring
 blur_aug = iaa.OneOf([
     iaa.GaussianBlur(sigma=(0,2.5)),
     iaa.GaussianBlur(sigma=(0,1.0))
@@ -32,12 +30,13 @@ trans_aug._mode_segmentation_maps = 'reflect'
 # simple augmenter to apply smooth elastic deformations
 distort_aug = iaa.PiecewiseAffine(scale=(0.01, 0.075))
 
+# simple augmenter to adjust the image contrast
+contrast_aug = iaa.GammaContrast(gamma=(0.65, 1.5))#new 0.65, 
+
 # compound augmenter that applies geometric augmenters and sporadically blurring and brightness
 full_aug = iaa.Sequential([
     flip_aug, trans_aug, distort_aug,
-    iaa.SomeOf((0, 2), [
-        iaa.Sometimes(0.5, blur_aug), iaa.Sometimes(0.75, brightness_aug)
-    ])
+    iaa.Sometimes(0.25, brightness_aug), iaa.Sometimes(0.25, contrast_aug), iaa.Sometimes(0.1, blur_aug)
 ])
 
 # a lookup dictionary for the different augmenters
@@ -47,15 +46,14 @@ augmenter_index = {
     'brightness': brightness_aug,
     'translation': trans_aug,
     'distortion': distort_aug,
+    'contrast': contrast_aug, 
     'all': full_aug
 }
 
 # takes a pair of images and applies a given augmenter to them, returning the result
 def augment_pair(img, mask, augmenter):
     augmenter = augmenter_index[augmenter]
-    augmenter.to_deterministic()#TODO1 check if to_deterministic is messing everything up
-    img = img.astype(np.uint8)#TODO1 will this mess everything up? very important to test this out with the full size images
-    mask = SegmentationMapsOnImage(mask, img.shape)#, nb_classes=3)
+    mask = SegmentationMapsOnImage(mask, img.shape)
     img_aug, mask_aug = augmenter(image=img, segmentation_maps=mask)
     mask_aug = SegmentationMapsOnImage.get_arr(mask_aug)
     return img_aug, mask_aug

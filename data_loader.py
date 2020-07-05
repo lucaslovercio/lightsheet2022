@@ -6,7 +6,6 @@ import cv2
 from augmentation import augment_pair
 #TODO:
 '''
-- once there's a decision about 8-bit vs 16-bit the division norm needs to be changed
 - add documentation to this file
 '''
 
@@ -64,37 +63,37 @@ def get_pairs_from_paths(images_path, segs_path):
 def get_image_array(img, norm_type):
     """ Load image array from input """
     img = img.astype(np.float32)
-    # normalization by division assumes that the input images were 16-bit
+    
     if norm_type == 'divide':
-        img /= 65536.0
+        img /= 255.0
     elif norm_type == 'sub_mean':
         img -= np.mean(img)
     elif norm_type == 'divide_and_sub':
-        img /= 65536.0
+        img /= 255.0
         img -= np.mean(img)
 
     img = img.reshape(img.shape + (1,))
 
     return img
 
-#TODO change nClasses here to n_classes
+
 # really all this does is convert the segmentations to one-hot encodings
-def get_segmentation_array(img, nClasses, width, height):
+def get_segmentation_array(img, n_classes, width, height):
     """ Load segmentation array from input """
 
-    seg_labels = np.zeros((height, width, nClasses))
+    seg_labels = np.zeros((height, width, n_classes))
 
-    for c in range(nClasses):#TODO seems this could be done simpler
+    for c in range(n_classes):#TODO seems this could be done simpler
         seg_labels[:, :, c] = (img == c).astype(int)
 
     return seg_labels
 
-# TODO change im and seg to img and mask
+
 def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, output_height, output_width,
                                  norm_type=None, aug_type=None, deterministic=False):
 
-    #TODO try running the dataset visualizer w/o this part, see what happens
     if deterministic:
+        # if the generator is being used for visualization, fix the order it generates images in
         random.seed(0)
 
     img_seg_pairs = get_pairs_from_paths(images_path, segs_path)
@@ -105,21 +104,23 @@ def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, 
         X = []
         Y = []
         for _ in range(batch_size):
-            im, seg = next(zipped)
+            img, mask = next(zipped)
 
-            im = cv2.imread(im, cv2.IMREAD_ANYDEPTH)#new changed from 0
-            seg = cv2.imread(seg, cv2.IMREAD_ANYDEPTH)#new changed from 0
-
+            img = cv2.imread(img, cv2.IMREAD_ANYDEPTH)#new changed from 0
+            mask = cv2.imread(mask, cv2.IMREAD_ANYDEPTH)#new changed from 0
+            # if the raw images are 16-bit, convert them to 8-bit for brightness augmentation and preprocessing by division
+            if img.dtype == np.uint16:
+                img = (img/256).astype(np.uint8)
             # apply augmentation
             if aug_type is not None:
-                im, seg = augment_pair(im, seg, aug_type)
+                img, mask = augment_pair(img, mask, aug_type)
             
-            X.append(get_image_array(im, norm_type))
-            Y.append(get_segmentation_array(seg, n_classes, output_width, output_height))
+            X.append(get_image_array(img, norm_type))
+            Y.append(get_segmentation_array(mask, n_classes, output_width, output_height))
             
         yield np.array(X), np.array(Y)
 
-# new (this function is designed to feed segmentImage.prediction in batches so the normalization works:
+# feed segmentImage.prediction in batches so the normalization works
 # this function is now deprecated
 def image_generator(images_path, batch_size):
     image_files = []
