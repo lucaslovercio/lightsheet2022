@@ -60,17 +60,25 @@ def get_pairs_from_paths(images_path, segs_path):
 
     return return_value
 
-
-def get_image_array(img):
+# really as this method does is normalize and add a dimension, not load
+def get_image_array(img, norm_type):
     """ Load image array from input """
     img = img.astype(np.float32)
-    img /= 255.0# doesn't seem to make any significant difference
-    #img -= img.mean()###
+    # normalization by division assumes that the input images were 16-bit
+    if norm_type == 'divide':
+        img /= 65536.0
+    elif norm_type == 'sub_mean':
+        img -= np.mean(img)
+    elif norm_type == 'divide_and_sub':
+        img /= 65536.0
+        img -= np.mean(img)
+
     img = img.reshape(img.shape + (1,))
 
     return img
 
-
+#TODO change nClasses here to n_classes
+# really all this does is convert the segmentations to one-hot encodings
 def get_segmentation_array(img, nClasses, width, height):
     """ Load segmentation array from input """
 
@@ -82,7 +90,8 @@ def get_segmentation_array(img, nClasses, width, height):
     return seg_labels
 
 
-def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, output_height, output_width):
+def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, output_height, output_width,
+                                 norm_type=None, aug_type=None):
 
     img_seg_pairs = get_pairs_from_paths(images_path, segs_path)
     random.shuffle(img_seg_pairs)
@@ -94,10 +103,20 @@ def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, 
         for _ in range(batch_size):
             im, seg = next(zipped)
 
-            im = cv2.imread(im, 0)
-            seg = cv2.imread(seg, 0)
+            im = cv2.imread(im, cv2.IMREAD_ANYDEPTH)#new changed from 0
+            seg = cv2.imread(seg, cv2.IMREAD_ANYDEPTH)#new changed from 0
 
-            X.append(get_image_array(im))
+            #TODO1 here is where the Gupta applies augmentation
+            # if do_augment:
+            #     im, seg[:, :, 0] = augment_seg(im, seg[:, :, 0],
+            #                                    augmentation_name)
+            #end of gupta's augmentation
+            if aug_type is 'todo':
+                #TODO the augmentation of the image and segmentation
+                print('augmenting')#cut
+            #TODO1 working above
+            
+            X.append(get_image_array(im, norm_type))
             Y.append(get_segmentation_array(seg, n_classes, output_width, output_height))
             
         yield np.array(X), np.array(Y)

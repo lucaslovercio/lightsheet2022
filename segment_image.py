@@ -26,9 +26,9 @@ Arguments:
 Return Value:
 This function returns a segmentation image as a numpy array.
 '''
-def prediction(model, image_path):
+def prediction(model, image_path, norm_type=None):
     img = cv2.imread(image_path, 0)
-    img = get_image_array(img)
+    img = get_image_array(img, norm_type)#relies on the model name
     img = np.array(img)
     img = img.reshape((1,) + img.shape)
     
@@ -58,10 +58,19 @@ to the specified output directory.
 def assess_model(model, frame_path, mask_path, output_folder):
     img_seg_pairs = get_pairs_from_paths(frame_path, mask_path)
     #load the model
+    #get normalization preprocessing type that the model was trained with
+    norm_type = None
+    if 'divide_and_sub' in model:
+        norm_type = 'divide_and_sub'
+    elif 'sub_mean' in model:
+        norm_type = 'sub_mean'
+    elif 'divide' in model:
+        norm_type = 'divide'
+    
     model = load_model(model, compile=False)
     for img, mask in img_seg_pairs:
         img_name = img[img.rfind('\\') + 1:]#this gets the image name out of the path
-        pred = prediction(model, img)
+        pred = prediction(model, img, norm_type)
         mask = cv2.imread(mask, 0) * 50
         output = np.concatenate((pred, mask), axis=1)
         cv2.imwrite(output_folder + img_name, output)
