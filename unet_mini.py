@@ -1,13 +1,12 @@
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
+
 import losses
 import metrics
 #TODO
 '''
 - clean up
-- consider adding the activation between layers as a finetunable hyperparam (at least try out leaky relu, softplus, etc.)
-- update model call to keras 2 API?
 '''
 
 #TODO extend this to a wider array of possibilities
@@ -24,11 +23,10 @@ def get_loss_func(loss_mode):
     return loss_func
 
 def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', firstFilters=32, kSize=3,
-         pool_size_max_pooling=2, activationLast='softmax', batchNorm = True,
-         dropOutLayerFlag = True, dropOutLayerRatio = 0.3, nClasses = 3):
+         pool_size_max_pooling=2, activation_last='softmax', batchNorm = True,
+         dropOutLayerFlag = True, dropOutLayerRatio = 0.3, nClasses = 3, activation = 'relu'):
 
     concat_axis = 3
-    activation = 'relu'
     inputs = Input(input_size)
 
     #conv1a
@@ -111,10 +109,10 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
         conv5 = BatchNormalization()(conv5)
     conv5 = Activation(activation)(conv5)
 
-    o = Conv2D(nClasses, (1, 1), padding='same',activation=activationLast)(conv5)
+    o = Conv2D(nClasses, (1, 1), padding='same',activation=activation_last)(conv5)
 
-    model = Model(input=inputs, output=o)
-    model.name = "unetMini4"
+    model = Model(inputs=inputs, outputs=o)
+    model.name = "unetMini"
 
     loss_func = get_loss_func(loss_mode)
     model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,

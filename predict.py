@@ -5,10 +5,10 @@ from data_loader import get_image_array, get_pairs_from_paths
 import os
 #TODO
 '''
+- should rename this file predict
 - add documentation
 - save loss curves w/ model somehow
 - save text w/ learning curves and test images
-- should rename this file predict
 '''
 
 '''
@@ -23,6 +23,9 @@ Arguments:
  time.
 - image_path:
  The path to the raw image to segment.
+- norm_type:
+ One of 'divide', 'sub_mean', and 'divide_and_sub'. A string describing how to normalize the 
+ images, before feeding them to the network.
 Return Value:
 This function returns a segmentation image as a numpy array.
 '''

@@ -1,4 +1,4 @@
-from segment_image import assess_models, assess_models_in_folders
+from predict import assess_models, assess_models_in_folders
 from finetuning import finetuning_loop
 from visualize_dataset import visualize_segmentation_dataset
 #TODO

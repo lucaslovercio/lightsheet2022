@@ -53,7 +53,6 @@ def jacard_coef_flat(y_true, y_pred):
     intersection = K.sum(y_true_f * y_pred_f)
     return (intersection + SMOOTH_LOSS) / (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + SMOOTH_LOSS)
 
-
 def dice_coef(y_true, y_pred, smooth=1.0):#used in losses
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)

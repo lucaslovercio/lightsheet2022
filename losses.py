@@ -2,6 +2,7 @@ import tensorflow as tf
 from keras.backend.tensorflow_backend import _to_tensor
 #TODO
 '''
+- understand bootstrapped_crossentropy
 '''
 
 #copied from https://github.com/olgaliak/segmentation-unet-maskrcnn/blob/master/unet/losses.py
@@ -29,8 +30,8 @@ def bootstrapped_crossentropy(y_true, y_pred, bootstrap_type='hard', alpha=0.95)
         labels=bootstrap_target_tensor, logits=prediction_tensor))
 
 def dice_coef_loss_bce(y_true, y_pred):
-    dice = 0.8# change these weights
-    bce = 0.2# change these weights
+    dice = 0.5
+    bce = 0.5
     bootstrapping = 'hard'
     alpha = 1.
     return bootstrapped_crossentropy(y_true, y_pred, bootstrapping, alpha) * bce + dice_coef_loss(y_true, y_pred) * dice
