@@ -19,10 +19,10 @@ blur_aug = iaa.OneOf([
     ])
 
 # simple augmenter to vary the brightness level of images
-brightness_aug = iaa.pillike.EnhanceBrightness((0.75, 1.25))
+brightness_aug = iaa.pillike.EnhanceBrightness((0.9, 1.1))
 
 # augmenter the applies multiple affine translations
-trans_aug = iaa.Affine(shear=(-16, 16), rotate=(0, 360),
+trans_aug = iaa.Affine(shear=(-16, 16),# rotate=(0, 360),
                        translate_percent={"x": (-0.10, 0.10), "y": (-0.10, 0.10)},
                        mode='reflect')
 trans_aug._mode_segmentation_maps = 'reflect'
@@ -31,7 +31,7 @@ trans_aug._mode_segmentation_maps = 'reflect'
 distort_aug = iaa.PiecewiseAffine(scale=(0.01, 0.075))
 
 # simple augmenter to adjust the image contrast
-contrast_aug = iaa.GammaContrast(gamma=(0.65, 1.5))#new 0.65, 
+contrast_aug = iaa.GammaContrast(gamma=(0.9, 1.1))
 
 # compound augmenter that applies geometric augmenters and sporadically blurring and brightness
 full_aug = iaa.Sequential([

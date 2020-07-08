@@ -6,25 +6,32 @@ import losses
 import metrics
 #TODO
 '''
+- change get_loss_func
 - clean up
 '''
 
-#TODO extend this to a wider array of possibilities
-def get_loss_func(loss_mode):
+def get_loss_func(loss_mode, weight):
 
-    if loss_mode == "bcedice":
-        loss_func = losses.dice_coef_loss_bce
-    elif loss_mode == "categorical_crossentropy":
-        loss_func = loss_mode
+    if loss_mode == 'dice_crossentropy_loss':
+        loss_func = losses.dice_crossentropy_loss(weight)
+    elif loss_mode == 'dice_loss':
+        loss_func = losses.dice_loss
     else:
-        loss_func = "binary_crossentropy"
-    #print("loss:", loss_func)###
+        loss_func = 'categorical_crossentropy'
     
     return loss_func
 
-def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', firstFilters=32, kSize=3,
+def get_optimizer(opt, lr):
+    if opt == 'rmsprop':
+        return RMSprop(lr)
+    else:
+        return Adam(lr)
+        
+
+def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy', loss_mode_weight=0.5, firstFilters=32, kSize=3,
          pool_size_max_pooling=2, activation_last='softmax', batchNorm = True,
-         dropOutLayerFlag = True, dropOutLayerRatio = 0.3, nClasses = 3, activation = 'relu'):
+         dropOutLayerFlag = True, dropOutLayerRatio = 0.3, nClasses = 3, activation = 'relu',
+         optimizer='adam'):
 
     concat_axis = 3
     inputs = Input(input_size)
@@ -114,23 +121,27 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='binary_crossentropy', fir
     model = Model(inputs=inputs, outputs=o)
     model.name = "unetMini"
 
-    loss_func = get_loss_func(loss_mode)
-    model.compile(optimizer=Adam(lr=lr), loss=loss_func, metrics=[metrics.jaccard_coef, metrics.jacard_coef_flat,
-                                                                   metrics.jaccard_coef_int, metrics.dice_coef,
-                                                                   metrics.recall_m, metrics.precision_m, metrics.f1_m,
-                                                                   metrics.binary_accuracy, #newish
-                                                                   #below here are new metrics
-                                                                   metrics.f1_M,
-                                                                   metrics.recall_M,
-                                                                   metrics.precision_M,
-                                                                   metrics.recall_0,
-                                                                   metrics.precision_0,
-                                                                   metrics.recall_1,
-                                                                   metrics.precision_1,
-                                                                   metrics.recall_2,
-                                                                   metrics.precision_2,
-                                                                   metrics.tissue_type_accuracy,
-                                                                   metrics.F1Micro(),
-                                                                   metrics.F1Macro(), 
-                                                                   'accuracy'])
+    loss_func = get_loss_func(loss_mode, loss_mode_weight)
+    optimizer = get_optimizer(optimizer, lr)
+    model.compile(optimizer=optimizer, loss=loss_func, metrics=[# batch-averaged precision recall and f1
+                                                                  metrics.recall_macro_batch, 
+                                                                  metrics.precision_macro_batch,
+                                                                  metrics.f1_macro_batch,
+                                                                  # batch-averaged precision and recall for each class
+                                                                  metrics.reca_0,
+                                                                  metrics.prec_0,
+                                                                  metrics.reca_1,
+                                                                  metrics.prec_1,
+                                                                  metrics.reca_2,
+                                                                  metrics.prec_2,
+                                                                  # epochwise metrics
+                                                                  metrics.RecallMacro(), 
+                                                                  metrics.PrecisionMacro(),
+                                                                  metrics.F1Macro(),
+                                                                  # accuracy metrics
+                                                                  metrics.binary_accuracy_batch,
+                                                                  metrics.tissue_type_accuracy_batch, 
+                                                                  metrics.BinaryAccuracy(),
+                                                                  metrics.TissueTypeAccuracy(), 
+                                                                  'accuracy'])
     return model
