@@ -6,20 +6,24 @@ import losses
 import metrics
 #TODO
 '''
-- change get_loss_func
 - clean up
 '''
 
-def get_loss_func(loss_mode, weight):
+def get_loss_func(loss_mode):
 
-    if loss_mode == 'dice_crossentropy_loss':
-        loss_func = losses.dice_crossentropy_loss(weight)
-    elif loss_mode == 'dice_loss':
-        loss_func = losses.dice_loss
+    if loss_mode == 'dice0_cce100':
+        return 'categorical_crossentropy'
+    elif loss_mode == 'dice20_cce80':
+        return losses.dice_cce(0.2)
+    elif loss_mode == 'dice50_cce50':
+        return losses.dice_cce(0.5)
+    elif loss_mode == 'dice100_cce0':
+        return losses.dice
+    elif loss_mode == 'dice':
+        return losses.dice
     else:
-        loss_func = 'categorical_crossentropy'
-    
-    return loss_func
+        print('Loss function "'  + loss_mode + '" is not defined, so training with categorical_crossentropy instead')
+    return 'categorical_crossentropy'
 
 def get_optimizer(opt, lr):
     if opt == 'rmsprop':
@@ -28,7 +32,7 @@ def get_optimizer(opt, lr):
         return Adam(lr)
         
 
-def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy', loss_mode_weight=0.5, firstFilters=32, kSize=3,
+def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy', firstFilters=32, kSize=3,
          pool_size_max_pooling=2, activation_last='softmax', batchNorm = True,
          dropOutLayerFlag = True, dropOutLayerRatio = 0.3, nClasses = 3, activation = 'relu',
          optimizer='adam'):
@@ -121,7 +125,7 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy'
     model = Model(inputs=inputs, outputs=o)
     model.name = "unetMini"
 
-    loss_func = get_loss_func(loss_mode, loss_mode_weight)
+    loss_func = get_loss_func(loss_mode)
     optimizer = get_optimizer(optimizer, lr)
     model.compile(optimizer=optimizer, loss=loss_func, metrics=[# batch-averaged precision recall and f1
                                                                   metrics.recall_macro_batch, 
