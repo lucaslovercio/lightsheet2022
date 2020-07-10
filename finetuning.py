@@ -7,22 +7,21 @@ from unet_mini import unet
 from save_training import save_model
 #TODO
 '''
-- try out a loop using batch sizes 8 and 16, if they are comparable use 8 as the new batch size
 - add proper documentation to this function
 '''
 
 # global variables
 IMG_SIZE = 128 # replace with 1024 to run on fullsize images
 MAX_EPOCHS = 300 # replace with something >> 300 for compute canada
-PATIENCE = 10 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
+PATIENCE = 20 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
 MONITOR = 'val_loss' # monitor this for early stopping
 OPTIM_TYPE = 'min' # either min or max, depending on MONITOR
 AUGMENTATION = None # replace with 'all' for data augmentation
 
 # hyperparameters
 BATCH_SIZES = [8]
-LEARNING_RATES = [1e-2, 1e-3] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
-LOSSES = ['dice50_cce50']  # replace with ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
+LEARNING_RATES = [1e-2, 1e-3, 1e-4, 1e-5] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+LOSSES = ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
 ACTIVATIONS = ['relu', 'sigmoid', 'tanh'] # replace with ['relu', 'sigmoid', 'tanh']
 ACTIVATION_LASTS = ['softmax']
 MAXPOOLINGS = [2,4]
@@ -31,7 +30,7 @@ KERNEL_SIZES = [3,7,15]
 DROPOUT = [True,False]
 BATCH_NORM = [True,False]
 NORM_TYPES = ['divide'] # replace with [None, 'divide', 'sub_mean', 'divide_and_sub']
-OPTIMIZERS = ['adam', 'rmsprop'] # replace with adam and armsprop
+OPTIMIZERS = ['adam', 'rmsprop']
 
 
 
@@ -88,7 +87,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         +  "_loss_" + str(loss) \
                                                         + "_filters_" + str(first_filters) \
                                                         + "_lr_" + str(learning_rate) \
-                                                        + "activation" + str(activation) \
+                                                        + "_activation_" + str(activation) \
                                                         + "_ksize_" + str(kernel_size) \
                                                         + "_activation_last_" + str(activation_last) \
                                                         + "_maxpool_" + str(maxpool) \

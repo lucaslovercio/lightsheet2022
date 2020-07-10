@@ -21,6 +21,8 @@ def get_loss_func(loss_mode):
         return losses.dice
     elif loss_mode == 'dice':
         return losses.dice
+    elif loss_mode == 'categorical_crossentropy':
+        return 'categorical_crossentropy'
     else:
         print('Loss function "'  + loss_mode + '" is not defined, so training with categorical_crossentropy instead')
     return 'categorical_crossentropy'
