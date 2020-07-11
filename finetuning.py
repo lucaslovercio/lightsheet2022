@@ -30,7 +30,7 @@ DROPOUT = [True,False]
 BATCH_NORM = [True,False]
 NORM_TYPES = ['divide'] # replace with [None, 'divide', 'sub_mean', 'divide_and_sub']
 OPTIMIZERS = ['adam', 'rmsprop']
-AUGMENTATIONS = [None, 'distortionless']
+AUGMENTATIONS = [None]# replace with [None, 'distortionless']
 
 
 
@@ -70,7 +70,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                                          firstFilters = first_filters, kSize = kernel_size,
                                                                          activation_last=activation_last, pool_size_max_pooling=maxpool, batchNorm = batch_norm,
                                                                          dropOutLayerFlag=dp, activation=activation, optimizer=optimizer)
-                                                        
+
                                                         # train the model
                                                         # print out the counter recording how many models have been trained in this loop
                                                         counter += 1

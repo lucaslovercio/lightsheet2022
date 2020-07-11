@@ -1,11 +1,14 @@
 from keras import backend as K
 import tensorflow as tf
 # K.epsilon returns 1e-7
-# maybe mention what epsilon is to Lucas
 
 #TODO
 '''
 - debug why there's no difference b/w training and validation F1 when computed on whole epochs
+ - http://digital-thinking.de/keras-three-ways-to-use-custom-validation-metrics-in-keras/
+ - https://keras.io/guides/writing_your_own_callbacks/
+- F1macro etc relies on there being exactly 3 classes, should be made to generalize better probably
+
 '''
 
 '''
@@ -127,7 +130,6 @@ def binary_accuracy_batch(y_true, y_pred):
 # tensorflow documentation https://www.tensorflow.org/api_docs/python/tf/keras/metrics/Metric
 # other documentation https://neptune.ai/blog/keras-metrics
 
-#TODO right now this method relies on there being exactly 3 classes, should be made to generalize better probably
 class F1Macro(tf.keras.metrics.Metric):
     def __init__(self, name='f1_macro', **kwargs):
         super(F1Macro, self).__init__(name=name, **kwargs)
@@ -348,4 +350,275 @@ class TissueTypeAccuracy(tf.keras.metrics.Metric):
     def reset_states(self):
         # The state of the metric will be reset at the start of each epoch.
         self.correct_count.assign(0.0)
-        self.correct_count.assign(0.0)
+        self.total_count.assign(0.0)
+
+
+# precision, recall, and f1 for background below
+class F1Macro0(tf.keras.metrics.Metric):
+    def __init__(self, name='f1_macro_0', **kwargs):
+        super(F1Macro0, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * correct[:,:,:,0]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * incorrect[:,:,:,0]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,0]) * incorrect[:,:,:,0]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return 2 * (precision * recall) / (precision + recall)
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+        self.false_negatives.assign(0.0)
+
+
+class PrecisionMacro0(tf.keras.metrics.Metric):
+    def __init__(self, name='precision_macro_0', **kwargs):
+        super(PrecisionMacro0, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * correct[:,:,:,0]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * incorrect[:,:,:,0]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        return precision
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+
+class RecallMacro0(tf.keras.metrics.Metric):
+    def __init__(self, name='recall_macro_0', **kwargs):
+        super(RecallMacro0, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * correct[:,:,:,0]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,0]) * incorrect[:,:,:,0]))
+        
+    def result(self):
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return recall
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_negatives.assign(0,0)
+
+# precision, recall, and f1 for neural below
+class F1Macro1(tf.keras.metrics.Metric):
+    def __init__(self, name='f1_macro_1', **kwargs):
+        super(F1Macro1, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * correct[:,:,:,1]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * incorrect[:,:,:,1]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,1]) * incorrect[:,:,:,1]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return 2 * (precision * recall) / (precision + recall)
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+        self.false_negatives.assign(0.0)
+
+
+class PrecisionMacro1(tf.keras.metrics.Metric):
+    def __init__(self, name='precision_macro_1', **kwargs):
+        super(PrecisionMacro1, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * correct[:,:,:,1]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * incorrect[:,:,:,1]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        return precision
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+
+class RecallMacro1(tf.keras.metrics.Metric):
+    def __init__(self, name='recall_macro_1', **kwargs):
+        super(RecallMacro1, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * correct[:,:,:,1]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,1]) * incorrect[:,:,:,1]))
+
+    def result(self):
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return recall
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_negatives.assign(0.0)
+
+# precision, recall, and f1 for mesenchyme below
+class F1Macro2(tf.keras.metrics.Metric):
+    def __init__(self, name='f1_macro_2', **kwargs):
+        super(F1Macro2, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * correct[:,:,:,2]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * incorrect[:,:,:,2]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return 2 * (precision * recall) / (precision + recall)
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+        self.false_negatives.assign(0.0)
+
+
+class PrecisionMacro2(tf.keras.metrics.Metric):
+    def __init__(self, name='precision_macro_2', **kwargs):
+        super(PrecisionMacro2, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_positives = self.add_weight(name='fp', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * correct[:,:,:,2]))
+        self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * incorrect[:,:,:,2]))
+
+    def result(self):
+        precision = self.true_positives / (self.true_positives + self.false_positives)
+        return precision
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_positives.assign(0.0)
+
+class RecallMacro2(tf.keras.metrics.Metric):
+    def __init__(self, name='recall_macro_2', **kwargs):
+        super(RecallMacro2, self).__init__(name=name, **kwargs)
+        self.true_positives = self.add_weight(name='tp', initializer='zeros')
+        self.false_negatives = self.add_weight(name='fn', initializer='zeros')
+
+    def update_state(self, y_true, y_pred):
+        # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
+        y_pred_flat = tf.math.argmax(y_pred, axis = -1)
+        y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
+        # construct matrix represention of where predictions matched the ground truth
+        correct = tf.cast(tf.math.equal(y_pred, y_true), dtype=tf.float32)
+        # construct matrix represention of where predictions didn't match the ground truth
+        incorrect = 1.0 - correct
+        # compute the true and false positives and negatives
+        # for background
+        self.true_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * correct[:,:,:,2]))
+        self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
+
+    def result(self):
+        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        return recall
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.true_positives.assign(0.0)
+        self.false_negatives.assign(0.0)

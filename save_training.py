@@ -130,7 +130,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     # plt.savefig(model_name + '_prec_rec.png')
     # plt.close()
 
-    #plot precision and recall by class on the validation set
+    #plot batch precision and recall by class on the validation set
     plt.plot(history.history['val_reca_0'], 'C0-o', markevery=[best_model_epoch])
     plt.plot(history.history['val_prec_0'], 'C0--o', markevery=[best_model_epoch])
     plt.plot(history.history['val_reca_1'], 'C1-o', markevery=[best_model_epoch])
@@ -141,6 +141,26 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     plt.ylabel('Measure')
     plt.xlabel('Epoch')
     plt.legend(['Reca B', 'Prec B', 'Reca N', 'Prec N', 'Reca M', 'Prec M'], loc='lower left')#B=bckgrnd, N=neur, M=mesen
+    plt.xlim([0, last_epoch])
+    plt.ylim(0,1)
+    #plt.show()
+    plt.savefig(model_name + '_batchpr_classes.png')
+    plt.close()
+
+    #plot epoch precision and recall by class on the validation set
+    plt.plot(history.history['val_recall_macro_0'], 'C0-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_macro_0'], 'C0--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro_0'], 'C0:o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_recall_macro_1'], 'C1-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_macro_1'], 'C1--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro_1'], 'C1:o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_recall_macro_2'], 'C2-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_precision_macro_2'], 'C2--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro_2'], 'C2:o', markevery=[best_model_epoch])
+    plt.title('Val Epochwise Classwise Precision/Recall')
+    plt.ylabel('Measure')
+    plt.xlabel('Epoch')
+    plt.legend(['Reca B', 'Prec B', 'F1 B', 'Reca N', 'Prec N', 'F1 N', 'Reca M', 'Prec M', 'F1 M'], loc='lower left')#B=bckgrnd, N=neur, M=mesen
     plt.xlim([0, last_epoch])
     plt.ylim(0,1)
     #plt.show()

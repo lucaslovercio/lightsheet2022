@@ -130,24 +130,33 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy'
     loss_func = get_loss_func(loss_mode)
     optimizer = get_optimizer(optimizer, lr)
     model.compile(optimizer=optimizer, loss=loss_func, metrics=[# batch-averaged precision recall and f1
-                                                                  metrics.recall_macro_batch, 
-                                                                  metrics.precision_macro_batch,
-                                                                  metrics.f1_macro_batch,
-                                                                  # batch-averaged precision and recall for each class
-                                                                  metrics.reca_0,
-                                                                  metrics.prec_0,
-                                                                  metrics.reca_1,
-                                                                  metrics.prec_1,
-                                                                  metrics.reca_2,
-                                                                  metrics.prec_2,
-                                                                  # epochwise metrics
-                                                                  metrics.RecallMacro(), 
-                                                                  metrics.PrecisionMacro(),
-                                                                  metrics.F1Macro(),
-                                                                  # accuracy metrics
-                                                                  metrics.binary_accuracy_batch,
-                                                                  metrics.tissue_type_accuracy_batch, 
-                                                                  metrics.BinaryAccuracy(),
-                                                                  metrics.TissueTypeAccuracy(), 
-                                                                  'accuracy'])
+                                                                metrics.recall_macro_batch,
+                                                                metrics.precision_macro_batch,
+                                                                metrics.f1_macro_batch,
+                                                                # batch-averaged precision and recall for each class
+                                                                metrics.reca_0,
+                                                                metrics.prec_0,
+                                                                metrics.reca_1,
+                                                                metrics.prec_1,
+                                                                metrics.reca_2,
+                                                                metrics.prec_2,
+                                                                # epochwise metrics
+                                                                metrics.RecallMacro(), 
+                                                                metrics.PrecisionMacro(),
+                                                                metrics.F1Macro(),
+                                                                metrics.RecallMacro0(),
+                                                                metrics.PrecisionMacro0(),
+                                                                metrics.F1Macro0(),
+                                                                metrics.RecallMacro1(),
+                                                                metrics.PrecisionMacro1(),
+                                                                metrics.F1Macro1(),
+                                                                metrics.RecallMacro2(),
+                                                                metrics.PrecisionMacro2(),
+                                                                metrics.F1Macro2(),
+                                                                # accuracy metrics
+                                                                metrics.binary_accuracy_batch,
+                                                                metrics.tissue_type_accuracy_batch, 
+                                                                metrics.BinaryAccuracy(),
+                                                                metrics.TissueTypeAccuracy(), 
+                                                                'accuracy'])
     return model
