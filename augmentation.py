@@ -39,6 +39,11 @@ full_aug = iaa.Sequential([
     iaa.Sometimes(0.25, brightness_aug), iaa.Sometimes(0.25, contrast_aug), iaa.Sometimes(0.1, blur_aug)
 ])
 
+full_aug_without_distortion = iaa.Sequential([
+    flip_aug, trans_aug,
+    iaa.Sometimes(0.25, brightness_aug), iaa.Sometimes(0.25, contrast_aug), iaa.Sometimes(0.1, blur_aug)
+])
+
 # a lookup dictionary for the different augmenters
 augmenter_index = {
     'flips': flip_aug,
@@ -47,7 +52,8 @@ augmenter_index = {
     'translation': trans_aug,
     'distortion': distort_aug,
     'contrast': contrast_aug, 
-    'all': full_aug
+    'all': full_aug,
+    'distortionless': full_aug_without_distortion
 }
 
 # takes a pair of images and applies a given augmenter to them, returning the result
