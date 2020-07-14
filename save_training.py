@@ -187,12 +187,20 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     
 
 
-def save_summary_txt(model, history, filename, history_index=-1):
+def save_summary_txt(model, history, filename, history_index=-1, val_history={}, test_history={}):
     filename_txt = filename + '.txt'
     f = open(filename_txt, 'a')
-    output_text = 'Metrics From Training:\n\n'
+    output_text = '\tMetrics From Training History:\n\n'
     for key in history.history.keys():
         output_text += key + ':\t\t' + str(history.history[key][history_index]) + '\n'
+    if bool(val_history):
+        output_text += '\n\tPost-Training Validation Metrics:\n\n'
+        for key in val_history.keys():
+            output_text += key + ':\t\t' + str(val_history[key]) + '\n'
+    if bool(test_history):
+        output_text += '\n\tMetrics from the Test Set:\n\n'
+        for key in test_history.keys():
+            output_text += key + ':\t\t' + str(test_history[key]) + '\n'
     f.write(output_text)
     
     stringlist = []
@@ -203,13 +211,13 @@ def save_summary_txt(model, history, filename, history_index=-1):
     f.close()
 
 # save the learning curves, summary, and model weights in a new folder
-def save_model(model, history, last_epoch, best_model_epoch, model_name, path):
+def save_model(model, history,last_epoch, best_model_epoch, model_name, path, val_history={}, test_history={}):
     subdir = path + model_name + '/'
     try:
         os.mkdir(subdir)
     except FileExistsError:
         pass
     full_filename = subdir + model_name
-    save_summary_txt(model, history, full_filename, last_epoch)
+    save_summary_txt(model, history, full_filename, last_epoch, val_history, test_history)
     plot_learning_curves(history, last_epoch, best_model_epoch, full_filename)
     model.save(full_filename + '.h5')

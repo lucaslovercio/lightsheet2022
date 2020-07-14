@@ -7,6 +7,7 @@ from unet_mini import unet
 from save_training import save_model
 #TODO
 '''
+- add the functionality to save testing/validation metrics from .evaluate() to a text file
 - add proper documentation to this function
 '''
 
@@ -34,7 +35,7 @@ AUGMENTATIONS = [None]# replace with [None, 'distortionless']
 
 
 
-def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path):
+def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path):#new test paths
     # variable to store the highest recorded f1 score to date
     best_f1 = -1
     # variable to track how many models have been trained so far
@@ -60,7 +61,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                             128, 128, norm_type, aug_type=augmentation)
                                                         val_generator = image_segmentation_generator(
                                                             val_frames_path, val_masks_path,  batch_size,  3,
-                                                            128, 128, norm_type, aug_type=augmentation)
+                                                            128, 128, norm_type)
                                                         
                                                         num_train_images = len(os.listdir(train_frames_path ))
                                                         num_val_images = len(os.listdir(val_frames_path))
@@ -77,11 +78,46 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         print('Now training model', counter)
                                                         # from https://machinelearningmastery.com/how-to-stop-training-deep-neural-networks-at-the-right-time-using-early-stopping/
                                                         es = EarlyStopping(monitor=MONITOR, mode=OPTIM_TYPE, verbose=1, patience=PATIENCE, restore_best_weights=True)
-                                                        results = modelUnet.fit_generator(train_generator, epochs=MAX_EPOCHS,
-                                                                                          steps_per_epoch = (num_train_images//batch_size),
-                                                                                          validation_data=val_generator,
-                                                                                          validation_steps=(num_val_images//batch_size),verbose=0,
-                                                                                          callbacks = [es])
+                                                        results = modelUnet.fit(train_generator,
+                                                                                epochs=MAX_EPOCHS,
+                                                                                steps_per_epoch = (num_train_images//batch_size),
+                                                                                validation_data=val_generator,
+                                                                                validation_steps=(num_val_images//batch_size),verbose=0,
+                                                                                callbacks = [es])
+                                                        
+                                                        # evaluate the model (new) (for debugging)
+                                                        va = modelUnet.evaluate(val_generator,
+                                                                               steps = (num_train_images//batch_size),
+                                                                               verbose=0)
+                                                        va = {out: va[i] for i, out in enumerate(modelUnet.metrics_names)}
+                                                        # move test generator up to where the other ones are if this become permanent
+                                                        test_generator = image_segmentation_generator(
+                                                            test_frames_path, test_masks_path,  batch_size,  3,
+                                                            128, 128, norm_type)
+                                                                                                                
+                                                        te = modelUnet.evaluate(test_generator,
+                                                                               steps = (num_train_images//batch_size),
+                                                                               verbose=0)
+                                                        te = {out: te[i] for i, out in enumerate(modelUnet.metrics_names)}
+
+                                                        tr = modelUnet.evaluate(train_generator,
+                                                                               steps = (num_train_images//batch_size),
+                                                                               verbose=0)
+                                                        tr = {out: tr[i] for i, out in enumerate(modelUnet.metrics_names)}
+                                                        print('~~~~~~~~~~')                                                        
+                                                        print('Evaluated Validation Accuracy:', va['accuracy'])###
+                                                        print('\nHistory Validation Accuracy:', results.history['val_accuracy'][-1])###
+                                                        print('\nHistory Training Accuracy:', results.history['accuracy'][-1])###
+                                                        print('\nEvaluated Training Accuracy:', tr['accuracy'])
+                                                        print('\nTest Accuracy', te['accuracy'])###
+                                                        print('~~~~~~~~~~')
+                                                        print('Evaluated Validation F1:', va['f1_macro'])###
+                                                        print('\nHistory Validation F1:', results.history['val_f1_macro'][-1])###
+                                                        print('\nHistory Training F1:', results.history['f1_macro'][-1])###
+                                                        print('\nEvaluated Training F1:', tr['f1_macro'])
+                                                        print('\nTest F1', te['f1_macro'])###
+                                                        print('~~~~~~~~~~')
+                                                        
                                                         
                                                         # save the model
                                                         model_name = str(modelUnet.name) \
@@ -106,4 +142,6 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # if the current model has the best F1 score yet, save it
                                                         if current_f1 > best_f1:
                                                             best_f1 = current_f1
-                                                            save_model(modelUnet, results, last_epoch, best_model_epoch, model_name, history_dir)
+                                                            save_model(modelUnet, results, last_epoch,
+                                                                       best_model_epoch, model_name, history_dir,
+                                                                       val_history=va, test_history=te)
