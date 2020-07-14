@@ -67,7 +67,7 @@ def assess_model_for_metrics(model, frame_path, mask_path, output_folder):
     model = load_model(model, compile=False)
     for img, mask in img_seg_pairs:
         img_name = img[img.rfind('\\') + 1:]#this gets the image name out of the path
-        pred = prediction(model, img, norm_type)
+        pred = prediction_for_metrics(model, img, norm_type)
         mask = cv2.imread(mask, 0)
         cv2.imwrite(output_folder + 'pred' + img_name, pred)
         cv2.imwrite(output_folder + 'mask' + img_name, mask)
