@@ -12,7 +12,7 @@ from save_training import save_model
 '''
 
 # global variables
-IMG_SIZE = 128 # replace with 1024 to run on fullsize images
+IMG_SIZE = 1024 # replace with 1024 to run on fullsize images
 MAX_EPOCHS = 300 # replace with something >> 300 for compute canada
 PATIENCE = 10 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
 MONITOR = 'val_loss' # monitor this for early stopping
@@ -58,10 +58,10 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # create generators for training and validation images
                                                         train_generator = image_segmentation_generator(
                                                             train_frames_path, train_masks_path,  batch_size,  3,
-                                                            128, 128, norm_type, aug_type=augmentation)
+                                                            IMG_SIZE, IMG_SIZE, norm_type, aug_type=augmentation)
                                                         val_generator = image_segmentation_generator(
                                                             val_frames_path, val_masks_path,  batch_size,  3,
-                                                            128, 128, norm_type)
+                                                            IMG_SIZE, IMG_SIZE, norm_type)
                                                         
                                                         num_train_images = len(os.listdir(train_frames_path ))
                                                         num_val_images = len(os.listdir(val_frames_path))
@@ -93,7 +93,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # move test generator up to where the other ones are if this become permanent
                                                         test_generator = image_segmentation_generator(
                                                             test_frames_path, test_masks_path,  batch_size,  3,
-                                                            128, 128, norm_type)
+                                                            IMG_SIZE, IMG_SIZE, norm_type)
                                                                                                                 
                                                         te = modelUnet.evaluate(test_generator,
                                                                                steps = (num_train_images//batch_size),
