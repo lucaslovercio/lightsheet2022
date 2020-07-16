@@ -7,31 +7,30 @@ from unet_mini import unet
 from save_training import save_model
 #TODO
 '''
-- add the functionality to save testing/validation metrics from .evaluate() to a text file
 - add proper documentation to this function
 '''
 
 # global variables
 IMG_SIZE = 1024 # replace with 1024 to run on fullsize images
-MAX_EPOCHS = 300 # replace with something >> 300 for compute canada
-PATIENCE = 10 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
+MAX_EPOCHS = 500 # replace with something >> 300 for compute canada
+PATIENCE = 20 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
 MONITOR = 'val_loss' # monitor this for early stopping
 OPTIM_TYPE = 'min' # either min or max, depending on MONITOR
 
 # hyperparameters
-BATCH_SIZES = [8]
-LEARNING_RATES = [1e-2, 1e-3, 1e-4, 1e-5] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
-LOSSES = ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
-ACTIVATIONS = ['relu', 'sigmoid', 'tanh'] # replace with ['relu', 'sigmoid', 'tanh']
+BATCH_SIZES = [16]
+LEARNING_RATES = [1e-2, 1e-4] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+LOSSES = ['categorical_crossentropy', 'dice20_cce80'] # replace with ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
+ACTIVATIONS = ['relu'] # replace with ['relu', 'sigmoid', 'tanh']
 ACTIVATION_LASTS = ['softmax']
 MAXPOOLINGS = [2,4]
-FIRST_FILTERS = [8,16,32,64]
+FIRST_FILTERS = [8, 16] # replace with [8, 16, 32, 64]
 KERNEL_SIZES = [3,7,15]
 DROPOUT = [True,False]
 BATCH_NORM = [True,False]
 NORM_TYPES = ['divide'] # replace with [None, 'divide', 'sub_mean', 'divide_and_sub']
-OPTIMIZERS = ['adam', 'rmsprop']
-AUGMENTATIONS = [None]# replace with [None, 'distortionless']
+OPTIMIZERS = ['adam'] # replace with ['adam', 'rmsprop', 'SGD']
+AUGMENTATIONS = [None, 'distortionless']# replace with [None, 'distortionless']
 
 
 
@@ -83,12 +82,14 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                                                 steps_per_epoch = (num_train_images//batch_size),
                                                                                 validation_data=val_generator,
                                                                                 validation_steps=(num_val_images//batch_size),verbose=0,
+                                                                                use_multiprocessing=True, #TODO1
                                                                                 callbacks = [es])
                                                         
                                                         # evaluate the model (new) (for debugging)
                                                         va = modelUnet.evaluate(val_generator,
-                                                                               steps = (num_train_images//batch_size),
-                                                                               verbose=0)
+                                                                                steps = (num_train_images//batch_size),
+                                                                                use_multiprocessing=True, #TODO1
+                                                                                verbose=0)
                                                         va = {out: va[i] for i, out in enumerate(modelUnet.metrics_names)}
                                                         # move test generator up to where the other ones are if this become permanent
                                                         test_generator = image_segmentation_generator(
@@ -96,13 +97,15 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                             IMG_SIZE, IMG_SIZE, norm_type)
                                                                                                                 
                                                         te = modelUnet.evaluate(test_generator,
-                                                                               steps = (num_train_images//batch_size),
-                                                                               verbose=0)
+                                                                                steps = (num_train_images//batch_size),
+                                                                                use_multiprocessing=True, #TODO1
+                                                                                verbose=0)
                                                         te = {out: te[i] for i, out in enumerate(modelUnet.metrics_names)}
 
                                                         tr = modelUnet.evaluate(train_generator,
-                                                                               steps = (num_train_images//batch_size),
-                                                                               verbose=0)
+                                                                                steps = (num_train_images//batch_size),
+                                                                                use_multiprocessing=True, #TODO1
+                                                                                verbose=0)
                                                         tr = {out: tr[i] for i, out in enumerate(modelUnet.metrics_names)}
                                                         print('~~~~~~~~~~')                                                        
                                                         print('Evaluated Validation Accuracy:', va['accuracy'])###
@@ -119,29 +122,35 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         print('~~~~~~~~~~')
                                                         
                                                         
-                                                        # save the model
+                                                        # save the model TODO1 changes to model_name and added model_info
                                                         model_name = str(modelUnet.name) \
-                                                            +  '_loss_' + str(loss) \
-                                                            + '_filters_' + str(first_filters) \
-                                                            + '_lr_' + str(learning_rate) \
-                                                            + '_activation_' + str(activation) \
-                                                            + '_ksize_' + str(kernel_size) \
-                                                            + '_activation_last_' + str(activation_last) \
-                                                            + '_maxpool_' + str(maxpool) \
-                                                            + '_batchnorm_' + str(batch_norm)\
-                                                            + '_dropout_' + str(dp) \
-                                                            + '_optim_' + str(optimizer) \
-                                                            + '_aug_' + str(augmentation) \
-                                                            + '_normtype_' + str(norm_type)# make sure norm_type is part of the name, or assess_model() won't work
+                                                                     + '_num_' + str(counter) \
+                                                                     + '_normtype_' + str(norm_type)# make sure norm_type is part of the name, or assess_model() won't work
+
+                                                        model_info = str(modelUnet.name) \
+                                                                     +  '_loss_' + str(loss) \
+                                                                     + '_filters_' + str(first_filters) \
+                                                                     + '_lr_' + str(learning_rate) \
+                                                                     + '_activation_' + str(activation) \
+                                                                     + '_ksize_' + str(kernel_size) \
+                                                                     + '_activation_last_' + str(activation_last) \
+                                                                     + '_maxpool_' + str(maxpool) \
+                                                                     + '_batchnorm_' + str(batch_norm)\
+                                                                     + '_dropout_' + str(dp) \
+                                                                     + '_optim_' + str(optimizer) \
+                                                                     + '_aug_' + str(augmentation) \
+                                                                     + '_normtype_' + str(norm_type)
+                                                        
                                                         # total number of epochs this model was trained for
                                                         last_epoch = len(results.history[MONITOR]) - 1 # note that the first epoch is "0"
                                                         # number of epochs before early stopping saved the best model
                                                         best_model_epoch = last_epoch - PATIENCE
                                                         # the best F1 score achieved while training this model
-                                                        current_f1 = results.history['val_f1_macro'][best_model_epoch]
+                                                        current_f1 = results.history['val_f1_macro_batch'][best_model_epoch]#TODO1 val_f1_macro_batch => val_f1_macro
                                                         # if the current model has the best F1 score yet, save it
                                                         if current_f1 > best_f1:
                                                             best_f1 = current_f1
                                                             save_model(modelUnet, results, last_epoch,
-                                                                       best_model_epoch, model_name, history_dir,
-                                                                       val_history=va, test_history=te)
+                                                                       best_model_epoch, model_name, model_info,#TODO1
+                                                                       history_dir, val_history=va, test_history=te)
+    print('Finetuning Loop completed')#TODO1 new, for monitoring the script for completion

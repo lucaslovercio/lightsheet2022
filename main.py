@@ -28,8 +28,8 @@ cc_test_frames_path = '../TissueDataset1024/Test/Original'
 cc_test_masks_path = '../TissueDataset1024/Test/Mask'
 
 # output paths
-history_dir = 'history_dev/'
-output_dir = 'predictions_dev/'
+history_dir = './history_dev/'
+output_dir = './predictions_dev/'
 
 # finetune the mini unet model
 #finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path)
