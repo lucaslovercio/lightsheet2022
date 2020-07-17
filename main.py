@@ -1,5 +1,5 @@
 from predict import assess_models, assess_models_in_folders
-from finetuning import finetuning_loop
+from finetuning import finetuning_loop, finetuning_random
 from visualize_dataset import visualize_segmentation_dataset
 #TODO
 '''
@@ -32,6 +32,7 @@ history_dir = './history_dev/'
 output_dir = './predictions_dev/'
 
 # finetune the mini unet model
+#finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, num_models=20)
 finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path)
 #finetuning_loop(history_dir, cc_train_frames_path, cc_train_masks_path, cc_val_frames_path, cc_val_masks_path, cc_test_frames_path, cc_test_masks_path)
 

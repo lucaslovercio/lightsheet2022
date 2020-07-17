@@ -187,7 +187,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     
 
 
-def save_summary_txt(model, history, filename, model_info, history_index=-1, val_history={}, test_history={}):#TODO1
+def save_summary_txt(model, history, filename, model_info, history_index=-1, val_history={}, test_history={}):# changed
     filename_txt = filename + '.txt'
     f = open(filename_txt, 'a')
     output_text = '\tMetrics From Training History:\n\n'
@@ -206,18 +206,18 @@ def save_summary_txt(model, history, filename, model_info, history_index=-1, val
     stringlist = []
     model.summary(print_fn=lambda x: stringlist.append(x))
     short_model_summary = '\n'.join(stringlist)
-    f.writelines('\n\nModel summary:  ' + model_info + '\n\n')#filename[filename.rfind('/')+1:]  +'\n\n')#TODO1
+    f.writelines('\n\nModel summary:  ' + model_info + '\n\n')# changed
     f.writelines(short_model_summary + '\n\n')
     f.close()
 
 # save the learning curves, summary, and model weights in a new folder
-def save_model(model, history,last_epoch, best_model_epoch, model_name, model_info, path, val_history={}, test_history={}):#TODO1
+def save_model(model, history,last_epoch, best_model_epoch, model_name, model_info, path, val_history={}, test_history={}):# changed
     subdir = path + model_name + '/'
     try:
         os.mkdir(subdir)
     except FileExistsError:
         pass
     full_filename = subdir + model_name
-    save_summary_txt(model, history, full_filename, model_info, last_epoch, val_history, test_history)#TODO1
+    save_summary_txt(model, history, full_filename, model_info, last_epoch, val_history, test_history)# changed
     plot_learning_curves(history, last_epoch, best_model_epoch, full_filename)
     model.save(full_filename + '.h5')
