@@ -45,7 +45,6 @@ def prediction_for_metrics(model, image_path, norm_type=None):
     img = get_image_array(img, norm_type)#relies on the model name
     img = np.array(img)
     img = img.reshape((1,) + img.shape)
-    
     preds_test = model.predict(img, verbose=0)
     preds_test = preds_test.argmax(axis=-1)
 
@@ -63,7 +62,6 @@ def assess_model_for_metrics(model, frame_path, mask_path, output_folder):
         norm_type = 'sub_mean'
     elif 'divide' in model:
         norm_type = 'divide'
-    
     model = load_model(model, compile=False)
     for img, mask in img_seg_pairs:
         img_name = img[img.rfind('\\') + 1:]#this gets the image name out of the path
@@ -71,8 +69,6 @@ def assess_model_for_metrics(model, frame_path, mask_path, output_folder):
         mask = cv2.imread(mask, 0)
         cv2.imwrite(output_folder + 'pred' + img_name, pred)
         cv2.imwrite(output_folder + 'mask' + img_name, mask)
-
-        
 
 '''
 Name: assess_model
