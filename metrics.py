@@ -230,9 +230,9 @@ class PrecisionMacro(tf.keras.metrics.Metric):
         self.false_positives_2.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * incorrect[:,:,:,2]))
 
     def result(self):
-        precision_0 = self.true_positives_0 / (self.true_positives_0 + self.false_positives_0)
-        precision_1 = self.true_positives_1 / (self.true_positives_1 + self.false_positives_1)
-        precision_2 = self.true_positives_2 / (self.true_positives_2 + self.false_positives_2)
+        precision_0 = (K.epsilon() + self.true_positives_0) / (self.true_positives_0 + self.false_positives_0 + K.epsilon())#new
+        precision_1 = (K.epsilon() + self.true_positives_1) / (self.true_positives_1 + self.false_positives_1 + K.epsilon())#new
+        precision_2 = (K.epsilon() + self.true_positives_2) / (self.true_positives_2 + self.false_positives_2 + K.epsilon())#new
         average_precision = (precision_0 + precision_1 + precision_2) / 3.0
         return average_precision
 
@@ -278,9 +278,9 @@ class RecallMacro(tf.keras.metrics.Metric):
         self.false_negatives_2.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
 
     def result(self):
-        recall_0 = self.true_positives_0 / (self.true_positives_0 + self.false_negatives_0)
-        recall_1 = self.true_positives_1 / (self.true_positives_1 + self.false_negatives_1)
-        recall_2 = self.true_positives_2 / (self.true_positives_2 + self.false_negatives_2)
+        recall_0 = (K.epsilon() + self.true_positives_0) / (self.true_positives_0 + self.false_negatives_0 + K.epsilon())#new
+        recall_1 = (K.epsilon() + self.true_positives_1) / (self.true_positives_1 + self.false_negatives_1 + K.epsilon())#new
+        recall_2 = (K.epsilon() + self.true_positives_2) / (self.true_positives_2 + self.false_negatives_2 + K.epsilon())#new
         average_recall = (recall_0 + recall_1 + recall_2) / 3.0
         return average_recall
 
@@ -313,7 +313,7 @@ class BinaryAccuracy(tf.keras.metrics.Metric):
         self.total_count.assign_add(total)
 
     def result(self):
-        accuracy = self.correct_count / self.total_count
+        accuracy = (K.epsilon() + self.correct_count) / (K.epsilon() + self.total_count)#new
         return accuracy
 
     def reset_states(self):
@@ -345,7 +345,7 @@ class TissueTypeAccuracy(tf.keras.metrics.Metric):
 
         
     def result(self):
-        accuracy = self.correct_count / self.total_count
+        accuracy = (K.epsilon() + self.correct_count) / (self.total_count + K.epsilon())#new
         return accuracy
 
     def reset_states(self):
@@ -377,8 +377,8 @@ class F1Macro0(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,0]) * incorrect[:,:,:,0]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return 2 * (precision * recall) / (precision + recall)
 
     def reset_states(self):
@@ -408,7 +408,7 @@ class PrecisionMacro0(tf.keras.metrics.Metric):
         self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,0] * incorrect[:,:,:,0]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
         return precision
 
     def reset_states(self):
@@ -436,7 +436,7 @@ class RecallMacro0(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,0]) * incorrect[:,:,:,0]))
         
     def result(self):
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return recall
 
     def reset_states(self):
@@ -467,8 +467,8 @@ class F1Macro1(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,1]) * incorrect[:,:,:,1]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return 2 * (precision * recall) / (precision + recall)
 
     def reset_states(self):
@@ -498,7 +498,7 @@ class PrecisionMacro1(tf.keras.metrics.Metric):
         self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,1] * incorrect[:,:,:,1]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
         return precision
 
     def reset_states(self):
@@ -526,7 +526,7 @@ class RecallMacro1(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,1]) * incorrect[:,:,:,1]))
 
     def result(self):
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return recall
 
     def reset_states(self):
@@ -557,8 +557,8 @@ class F1Macro2(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return 2 * (precision * recall) / (precision + recall)
 
     def reset_states(self):
@@ -588,7 +588,7 @@ class PrecisionMacro2(tf.keras.metrics.Metric):
         self.false_positives.assign_add(tf.reduce_sum(y_pred[:,:,:,2] * incorrect[:,:,:,2]))
 
     def result(self):
-        precision = self.true_positives / (self.true_positives + self.false_positives)
+        precision = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_positives + K.epsilon())#new
         return precision
 
     def reset_states(self):
@@ -616,7 +616,7 @@ class RecallMacro2(tf.keras.metrics.Metric):
         self.false_negatives.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
 
     def result(self):
-        recall = self.true_positives / (self.true_positives + self.false_negatives)
+        recall = (K.epsilon() + self.true_positives) / (self.true_positives + self.false_negatives + K.epsilon())#new
         return recall
 
     def reset_states(self):
