@@ -4,6 +4,7 @@ import tensorflow as tf
 
 #TODO
 '''
+- debug why the epochwise metrics aren't working on compute canada
 - debug why there's no difference b/w training and validation F1 when computed on whole epochs
  - http://digital-thinking.de/keras-three-ways-to-use-custom-validation-metrics-in-keras/
  - https://keras.io/guides/writing_your_own_callbacks/
@@ -168,19 +169,19 @@ class F1Macro(tf.keras.metrics.Metric):
         self.false_negatives_2.assign_add(tf.reduce_sum((1.0 - y_pred[:,:,:,2]) * incorrect[:,:,:,2]))
 
     def result(self):
-        precision_0 = self.true_positives_0 / (self.true_positives_0 + self.false_positives_0)
-        recall_0 = self.true_positives_0 / (self.true_positives_0 + self.false_negatives_0)
+        precision_0 = (K.epsilon() + self.true_positives_0) / (self.true_positives_0 + self.false_positives_0 + K.epsilon())#new
+        recall_0 = (K.epsilon() + self.true_positives_0) / (self.true_positives_0 + self.false_negatives_0 + K.epsilon())#new
 
-        precision_1 = self.true_positives_1 / (self.true_positives_1 + self.false_positives_1)
-        recall_1 = self.true_positives_1 / (self.true_positives_1 + self.false_negatives_1)
+        precision_1 = (K.epsilon() + self.true_positives_1) / (self.true_positives_1 + self.false_positives_1 + K.epsilon())#new
+        recall_1 = (K.epsilon() + self.true_positives_1) / (self.true_positives_1 + self.false_negatives_1 + K.epsilon())#new
 
-        precision_2 = self.true_positives_2 / (self.true_positives_2 + self.false_positives_2)
-        recall_2 = self.true_positives_2 / (self.true_positives_2 + self.false_negatives_2)
+        precision_2 = (K.epsilon() + self.true_positives_2) / (self.true_positives_2 + self.false_positives_2 + K.epsilon())#new
+        recall_2 = (K.epsilon() + self.true_positives_2) / (self.true_positives_2 + self.false_negatives_2 + K.epsilon())#new
 
         average_precision = (precision_0 + precision_1 + precision_2) / 3.0
         average_recall = (recall_0 + recall_1 + recall_2) / 3.0
 
-        return 2 * (average_precision * average_recall) / (average_precision + average_recall)
+        return 2 * (average_precision * average_recall + K.epsilon()) / (average_precision + average_recall + K.epsilon())#new
 
     def reset_states(self):
         # The state of the metric will be reset at the start of each epoch.

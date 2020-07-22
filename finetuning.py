@@ -5,16 +5,14 @@ import random
 
 from data_loader import image_segmentation_generator
 from unet_mini import unet
-from save_training import save_model
+from save_training import save_model, save_random_models
 #TODO
 '''
-- add proper documentation to this function
+- change random finetuning so that it can evaluate the best models
+- add proper documentation to these functions
 '''
 
 # global variables
-IMG_SIZE = 128 # replace with 1024 to run on fullsize images
-MAX_EPOCHS = 350 # replace with something >> 300 for compute canada
-PATIENCE = 20 # train for this many epochs without improvement replace with ~50 or ~100 for compute canada
 MONITOR = 'val_loss' # monitor this for early stopping
 OPTIM_TYPE = 'min' # either min or max, depending on MONITOR
 
@@ -35,7 +33,11 @@ AUGMENTATIONS = [None, 'distortionless']# replace with [None, 'distortionless']
 
 
 
-def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path):#new test paths
+def finetuning_loop(history_dir,
+                    train_frames_path, train_masks_path,
+                    val_frames_path, val_masks_path,
+                    test_frames_path, test_masks_path,
+                    img_size=128, max_epochs=10000, patience=100):
     # variable to store the highest recorded f1 score to date
     best_f1 = -1
     # variable to track how many models have been trained so far
@@ -58,16 +60,16 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # create generators for training and validation images
                                                         train_generator = image_segmentation_generator(
                                                             train_frames_path, train_masks_path,  batch_size,  3,
-                                                            IMG_SIZE, IMG_SIZE, norm_type, aug_type=augmentation)
+                                                            img_size, img_size, norm_type, aug_type=augmentation)
                                                         val_generator = image_segmentation_generator(
                                                             val_frames_path, val_masks_path,  batch_size,  3,
-                                                            IMG_SIZE, IMG_SIZE, norm_type)
+                                                            img_size, img_size, norm_type)
                                                         
                                                         num_train_images = len(os.listdir(train_frames_path ))
                                                         num_val_images = len(os.listdir(val_frames_path))
                                                         
                                                         # build the model
-                                                        modelUnet = unet(lr = learning_rate, input_size = (IMG_SIZE, IMG_SIZE,1), loss_mode = loss,
+                                                        modelUnet = unet(lr = learning_rate, input_size = (img_size, img_size,1), loss_mode = loss,
                                                                          firstFilters = first_filters, kSize = kernel_size,
                                                                          activation_last=activation_last, pool_size_max_pooling=maxpool, batchNorm = batch_norm,
                                                                          dropOutLayerFlag=dp, activation=activation, optimizer=optimizer)
@@ -77,9 +79,9 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         counter += 1
                                                         print('Now training model', counter)
                                                         # from https://machinelearningmastery.com/how-to-stop-training-deep-neural-networks-at-the-right-time-using-early-stopping/
-                                                        es = EarlyStopping(monitor=MONITOR, mode=OPTIM_TYPE, verbose=1, patience=PATIENCE, restore_best_weights=True)
+                                                        es = EarlyStopping(monitor=MONITOR, mode=OPTIM_TYPE, verbose=1, patience=patience, restore_best_weights=True)
                                                         results = modelUnet.fit(train_generator,
-                                                                                epochs=MAX_EPOCHS,
+                                                                                epochs=max_epochs,
                                                                                 steps_per_epoch = (num_train_images//batch_size),
                                                                                 validation_data=val_generator,
                                                                                 validation_steps=(num_val_images//batch_size),verbose=0,
@@ -95,7 +97,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # # move test generator up to where the other ones are if this become permanent
                                                         # test_generator = image_segmentation_generator(
                                                         #     test_frames_path, test_masks_path,  batch_size,  3,
-                                                        #     IMG_SIZE, IMG_SIZE, norm_type)
+                                                        #     img_size, img_size, norm_type)
                                                                                                                 
                                                         # te = modelUnet.evaluate(test_generator,
                                                         #                         steps = (num_train_images//batch_size),
@@ -144,7 +146,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                         # total number of epochs this model was trained for
                                                         last_epoch = len(results.history[MONITOR]) - 1 # note that the first epoch is "0"
                                                         # number of epochs before early stopping saved the best model
-                                                        best_model_epoch = last_epoch - PATIENCE
+                                                        best_model_epoch = last_epoch - patience
                                                         # the best F1 score achieved while training this model
                                                         current_f1 = results.history['val_f1_macro'][best_model_epoch]#use batch version of val_f1_macro for the compute canada (cc) machine
                                                         # if the current model has the best F1 score yet, save it
@@ -152,7 +154,7 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
                                                             best_f1 = current_f1
                                                             save_model(modelUnet, results, last_epoch,
                                                                        best_model_epoch, model_name, model_info,#changed
-                                                                       history_dir)#, val_history=va, test_history=te) TODO1
+                                                                       history_dir)#, val_history=va, test_history=te)
     print('Finetuning Loop completed')
 
 
@@ -161,11 +163,18 @@ def finetuning_loop(history_dir, train_frames_path, train_masks_path, val_frames
 
 
 
-def finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, num_models):
+def finetuning_random(history_dir,
+                      train_frames_path, train_masks_path,
+                      val_frames_path, val_masks_path,
+                      test_frames_path, test_masks_path,
+                      img_size=128, max_epochs=10000, patience=100,
+                      tuning_metric='val_f1_macro', percentile=70, num_models=1):
     # variable to store the highest recorded f1 score to date
     best_f1 = -1
     # variable to track how many models have been trained so far
     counter = 0
+    # python list containing the useful information about all models
+    all_model_stats = []
     # randomly sample settings of hyperparameters
     for counter in range(num_models):
         batch_size = random.choice(BATCH_SIZES)
@@ -200,16 +209,16 @@ def finetuning_random(history_dir, train_frames_path, train_masks_path, val_fram
         # create generators for training and validation images
         train_generator = image_segmentation_generator(
             train_frames_path, train_masks_path,  batch_size,  3,
-            IMG_SIZE, IMG_SIZE, norm_type, aug_type=augmentation)
+            img_size, img_size, norm_type, aug_type=augmentation)
         val_generator = image_segmentation_generator(
             val_frames_path, val_masks_path,  batch_size,  3,
-            IMG_SIZE, IMG_SIZE, norm_type)
+            img_size, img_size, norm_type)
         
         num_train_images = len(os.listdir(train_frames_path ))
         num_val_images = len(os.listdir(val_frames_path))
         
         # build the model
-        modelUnet = unet(lr = learning_rate, input_size = (IMG_SIZE, IMG_SIZE,1), loss_mode = loss,
+        modelUnet = unet(lr = learning_rate, input_size = (img_size, img_size,1), loss_mode = loss,
                          firstFilters = first_filters, kSize = kernel_size,
                          activation_last=activation_last, pool_size_max_pooling=maxpool, batchNorm = batch_norm,
                          dropOutLayerFlag=dp, activation=activation, optimizer=optimizer)
@@ -220,44 +229,55 @@ def finetuning_random(history_dir, train_frames_path, train_masks_path, val_fram
         counter += 1
         print('Now training model', counter)
 
-        es = EarlyStopping(monitor=MONITOR, mode=OPTIM_TYPE, verbose=1, patience=PATIENCE, restore_best_weights=True)
+        es = EarlyStopping(monitor=MONITOR, mode=OPTIM_TYPE, verbose=1, patience=patience, restore_best_weights=True)
         results = modelUnet.fit(train_generator,
-                                epochs=MAX_EPOCHS,
+                                epochs=max_epochs,
                                 steps_per_epoch = (num_train_images//batch_size),
                                 validation_data=val_generator,
                                 validation_steps=(num_val_images//batch_size),verbose=0,
                                 #use_multiprocessing=True, #for cc
                                 callbacks = [es])
+
+
+        # store the model's info in the cumulative list
         
-        # save the model (new changes to model_name and added model_info)
         model_name = str(modelUnet.name) \
             + '_num_' + str(counter) \
             + '_normtype_' + str(norm_type)# make sure norm_type is part of the name, or assess_model() won't work
-        model_info = str(modelUnet.name) \
-            +  '_loss_' + str(loss) \
-            + '_filters_' + str(first_filters) \
-            + '_lr_' + str(learning_rate) \
-            + '_activation_' + str(activation) \
-            + '_ksize_' + str(kernel_size) \
-            + '_activation_last_' + str(activation_last) \
-            + '_maxpool_' + str(maxpool) \
-            + '_batchnorm_' + str(batch_norm)\
-            + '_dropout_' + str(dp) \
-            + '_optim_' + str(optimizer) \
-            + '_aug_' + str(augmentation) \
-            + '_normtype_' + str(norm_type)
+        
+        hyperparameters = {'name': modelUnet.name,
+                      'loss': loss,
+                      'filters': first_filters,
+                      'lr': learning_rate, 
+                      'activation': activation, 
+                      'ksize': kernel_size,  
+                      'activation_last': activation_last, 
+                      'maxpool': maxpool, 
+                      'batchnorm': batch_norm, 
+                      'dropout': dp, 
+                      'optim': optimizer, 
+                      'aug': augmentation, 
+        'normtype': norm_type}
+
+        training_history = results.history
         
         # total number of epochs this model was trained for
-        last_epoch = len(results.history[MONITOR]) - 1 # note that the first epoch is "0"
+        last_epoch = len(training_history[MONITOR]) - 1 # note that the first epoch is "0"
         # number of epochs before early stopping saved the best model
-        best_model_epoch = last_epoch - PATIENCE
-        # the best F1 score achieved while training this model
-        current_f1 = results.history['val_f1_macro_batch'][best_model_epoch]#use batch version of val_f1_macro for the compute canada (cc) machine
-        # if the current model has the best F1 score yet, save it
-        if current_f1 > best_f1:
-            best_f1 = current_f1
-            save_model(modelUnet, results, last_epoch,
-                       best_model_epoch, model_name, model_info,
-                       history_dir)
-    print('Finetuning Loop completed')
-            
+        best_model_epoch = last_epoch - patience
+
+        all_model_stats.append({'name': model_name,
+                            'model_number': counter,
+                            'best_epoch': best_model_epoch,
+                            'hyperparameters': hyperparameters,
+                            'history': training_history
+        })
+
+    
+    # select the top <percentile> models based on <tuning_metric>
+    best_model_stats = sorted(all_model_stats, key = lambda x: x['history'][tuning_metric][x['best_epoch']])[int(percentile / 100 * len(all_model_stats)):]
+    # save a text file containing the info from training
+    save_random_models(best_model_stats, history_dir)
+    # cut the below
+    print([x['model_number'] for x in best_model_stats])
+    print([x['history'][tuning_metric][x['best_epoch']] for x in all_model_stats])

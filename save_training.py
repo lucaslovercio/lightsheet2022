@@ -111,7 +111,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     # plt.savefig(model_name + '_f1.png')
     # plt.close()
 
-    # # plot in depth recall and precision for validation and training TODO should cut this graph
+    # # plot in depth recall and precision for validation and training
     # plt.plot(history.history['recall_m'], 'b-|', markevery=[best_model_epoch])
     # plt.plot(history.history['precision_m'], 'b--|', markevery=[best_model_epoch])
     # plt.plot(history.history['recall_M'], 'b:|', markevery=[best_model_epoch])
@@ -211,13 +211,35 @@ def save_summary_txt(model, history, filename, model_info, history_index=-1, val
     f.close()
 
 # save the learning curves, summary, and model weights in a new folder
-def save_model(model, history,last_epoch, best_model_epoch, model_name, model_info, path, val_history={}, test_history={}):# changed
+def save_model(model, history, last_epoch, best_model_epoch, model_name, model_info, path, val_history={}, test_history={}):
     subdir = path + model_name + '/'
     try:
         os.mkdir(subdir)
     except FileExistsError:
         pass
     full_filename = subdir + model_name
-    save_summary_txt(model, history, full_filename, model_info, last_epoch, val_history, test_history)# changed
+    save_summary_txt(model, history, full_filename, model_info, last_epoch, val_history, test_history)
     plot_learning_curves(history, last_epoch, best_model_epoch, full_filename)
     model.save(full_filename + '.h5')
+
+# method for finetuning via random search, only saves textual info about model performance and hyperparameters
+def save_random_models(model_list, path, recorded_metrics=['val_f1_macro', 'val_tissue_type_accuracy', 'val_binary_accuracy']):
+    filename_txt = path + '/best_models_hyperparam_config.txt'
+    f = open(filename_txt, 'a')
+    output_text = ''
+    for model in model_list:
+        output_text += 'Model Name: ' + model['name'] + '\n' \
+            + 'Model Training Number: ' + str(model['model_number']) + '\n' \
+            + 'Number of Epochs: ' + str(model['best_epoch']) + '\n\n' \
+
+        output_text += 'Hyperparameters\n'
+        for hyperparameter in model['hyperparameters']:
+            output_text += hyperparameter.ljust(18, '.') + str(model['hyperparameters'][hyperparameter]) + '\n'
+            
+        output_text += '\nMetrics:\n'
+        for metric in recorded_metrics:
+            output_text += metric.ljust(28, '.') + str(model['history'][metric][model['best_epoch']]) + '\n'
+        output_text += '___________________________________________________________________________\n' \
+            + '___________________________________________________________________________\n'
+    f.write(output_text)
+    f.close()
