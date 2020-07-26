@@ -6,9 +6,9 @@ import random
 from data_loader import image_segmentation_generator
 from unet_mini import unet
 from save_training import save_model, save_random_models
+from predict import predictions_for_metrics
 #TODO
 '''
-- change random finetuning so that it can evaluate the best models
 - add proper documentation to these functions
 '''
 
@@ -124,7 +124,6 @@ def finetuning_loop(history_dir,
                                                         # print('\nTest F1', te['f1_macro'])###
                                                         # print('~~~~~~~~~~')
                                                         
-                                                        
                                                         # save the model (new changes to model_name and added model_info)
                                                         model_name = str(modelUnet.name) \
                                                             + '_num_' + str(counter) \
@@ -168,7 +167,7 @@ def finetuning_random(history_dir,
                       val_frames_path, val_masks_path,
                       test_frames_path, test_masks_path,
                       img_size=128, max_epochs=10000, patience=100,
-                      tuning_metric='val_f1_macro', percentile=70, num_models=1):
+                      tuning_metric='val_f1_macro', percentile=75, num_models=1): 
     # variable to store the highest recorded f1 score to date
     best_f1 = -1
     # variable to track how many models have been trained so far
@@ -266,18 +265,30 @@ def finetuning_random(history_dir,
         # number of epochs before early stopping saved the best model
         best_model_epoch = last_epoch - patience
 
+        # calculate the important metrics on the validation set
+        f1, binary_acc, tissue_acc = predictions_for_metrics(modelUnet, val_frames_path, val_masks_path, norm_type)
+
         all_model_stats.append({'name': model_name,
-                            'model_number': counter,
-                            'best_epoch': best_model_epoch,
-                            'hyperparameters': hyperparameters,
-                            'history': training_history
+                                'model_number': counter,
+                                'best_epoch': best_model_epoch,
+                                'hyperparameters': hyperparameters,
+                                'history': training_history,
+                                'f1': f1,
+                                'binary_accuracy': binary_acc,
+                                'tissue_accuracy': tissue_acc
         })
 
     
-    # select the top <percentile> models based on <tuning_metric>
-    best_model_stats = sorted(all_model_stats, key = lambda x: x['history'][tuning_metric][x['best_epoch']])[int(percentile / 100 * len(all_model_stats)):]
+    # select the top <percentile> models
+    best_model_stats = sorted(all_model_stats, key = lambda x: x['f1'])[int(percentile / 100 * len(all_model_stats)):]
+    # the line below is for computing f1 from keras history, it should be used in conjunction with save_random_models_metrics_from_history
+    # note: best_model_stats = sorted(all_model_stats, key = lambda x: x['history'][tuning_metric][x['best_epoch']])[int(percentile / 100 * len(all_model_stats)):]
+    
     # save a text file containing the info from training
     save_random_models(best_model_stats, history_dir)
+
     # cut the below
-    print([x['model_number'] for x in best_model_stats])
-    print([x['history'][tuning_metric][x['best_epoch']] for x in all_model_stats])
+    # print([x['model_number'] for x in best_model_stats])
+    # print([x['f1'] for x in all_model_stats])
+    #print([x['history'][tuning_metric][x['best_epoch']] for x in all_model_stats])
+    

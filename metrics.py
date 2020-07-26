@@ -1,5 +1,6 @@
 from keras import backend as K
 import tensorflow as tf
+import numpy as np
 # K.epsilon returns 1e-7
 
 #TODO
@@ -623,3 +624,60 @@ class RecallMacro2(tf.keras.metrics.Metric):
         # The state of the metric will be reset at the start of each epoch.
         self.true_positives.assign(0.0)
         self.false_negatives.assign(0.0)
+
+
+########### below here are metric implementations from the MATLAB code
+
+# evaluates important metrics for finetuning manually, without using keras
+#note: it's assumed that the predictions and masks are flattened to a vector
+def evaluate_metrics(preds, masks):
+    
+    classes = np.unique(masks)
+    num_classes = len(classes)
+
+    # get the confusion matrix
+    tps = np.zeros([num_classes])
+    tns = np.zeros([num_classes])
+    fps = np.zeros([num_classes])
+    fns = np.zeros([num_classes])
+    total_class = np.zeros([num_classes])
+    
+    for i in range(num_classes):
+        i_class = classes[i]
+        
+        tp = (preds == i_class) & (masks == i_class)
+        tn = (preds != i_class) & (masks != i_class)
+        fp = (preds == i_class) & (masks != i_class)
+        fn = (preds != i_class) & (masks == i_class)
+        
+        tps[i] = np.sum(tp) + K.epsilon()
+        tns[i] = np.sum(tn) + K.epsilon()
+        fps[i] = np.sum(fp) + K.epsilon()
+        fns[i] = np.sum(fn) + K.epsilon()
+        total_class[i] = np.sum(masks == i_class)
+
+    # compute the macroaveraged f1 score
+    recalls = np.zeros([num_classes])
+    precisions = np.zeros([num_classes])
+
+    precisions = tps / (tps + fps)
+    recalls = tps / (tps + fns)
+
+    precision_M = np.sum(precisions) / num_classes
+    recall_M = np.sum(recalls) / num_classes
+
+    f1_score = 2 * ( (precision_M * recall_M) / (precision_M + recall_M) )
+    
+    # compute the binary accuracy
+    binary_accuracy = (tps[0] + tns[0]) / (tps[0] + tns[0] + fps[0] + fns[0])
+
+    # compute the tissue accuracy
+    tissue_preds = preds[masks.astype(np.bool)]
+    tissue_masks = masks[masks.astype(np.bool)]
+
+    correct = np.sum(tissue_preds == tissue_masks)
+    total = tissue_masks.size
+    
+    tissue_accuracy = correct / total
+
+    return f1_score, binary_accuracy, tissue_accuracy

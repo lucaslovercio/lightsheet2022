@@ -223,7 +223,8 @@ def save_model(model, history, last_epoch, best_model_epoch, model_name, model_i
     model.save(full_filename + '.h5')
 
 # method for finetuning via random search, only saves textual info about model performance and hyperparameters
-def save_random_models(model_list, path, recorded_metrics=['val_f1_macro', 'val_tissue_type_accuracy', 'val_binary_accuracy']):
+# uses the metrics keras calculates from the validation set
+def save_random_models_metrics_from_history(model_list, path, recorded_metrics=['val_f1_macro', 'val_tissue_type_accuracy', 'val_binary_accuracy']):
     filename_txt = path + '/best_models_hyperparam_config.txt'
     f = open(filename_txt, 'a')
     output_text = ''
@@ -239,6 +240,33 @@ def save_random_models(model_list, path, recorded_metrics=['val_f1_macro', 'val_
         output_text += '\nMetrics:\n'
         for metric in recorded_metrics:
             output_text += metric.ljust(28, '.') + str(model['history'][metric][model['best_epoch']]) + '\n'
+        output_text += 'Manual F1'.ljust(28, '.') + str(model['f1']) + '\n' \
+            + 'Manual Binary Accuracy'.ljust(28, '.') + str(model['binary_accuracy']) + '\n' \
+            + 'Manual Tissue Accuracy'.ljust(28, '.') + str(model['tissue_accuracy']) + '\n' 
+        output_text += '___________________________________________________________________________\n' \
+            + '___________________________________________________________________________\n'
+    f.write(output_text)
+    f.close()
+
+# method for finetuning via random search, only saves textual info about model performance and hyperparameters
+# uses only the manually calculated metrics supplied by predictions_for_metrics
+def save_random_models(model_list, path):
+    filename_txt = path + '/best_models_hyperparam_config.txt'
+    f = open(filename_txt, 'a')
+    output_text = ''
+    for model in model_list:
+        output_text += 'Model Name: ' + model['name'] + '\n' \
+            + 'Model Training Number: ' + str(model['model_number']) + '\n' \
+            + 'Number of Epochs: ' + str(model['best_epoch']) + '\n\n' \
+
+        output_text += 'Hyperparameters\n'
+        for hyperparameter in model['hyperparameters']:
+            output_text += hyperparameter.ljust(18, '.') + str(model['hyperparameters'][hyperparameter]) + '\n'
+            
+        output_text += '\nMetrics:\n'
+        output_text += 'Manual F1'.ljust(28, '.') + str(model['f1']) + '\n' \
+            + 'Manual Binary Accuracy'.ljust(28, '.') + str(model['binary_accuracy']) + '\n' \
+            + 'Manual Tissue Accuracy'.ljust(28, '.') + str(model['tissue_accuracy']) + '\n' 
         output_text += '___________________________________________________________________________\n' \
             + '___________________________________________________________________________\n'
     f.write(output_text)

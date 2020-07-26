@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 from data_loader import get_image_array, get_pairs_from_paths
 import os
+
+from metrics import evaluate_metrics
 #TODO
 '''
 - add documentation
@@ -39,18 +41,31 @@ def prediction(model, image_path, norm_type=None):
 
     return preds_test[0]
 
-# new
-def prediction_for_metrics(model, image_path, norm_type=None):
-    img = cv2.imread(image_path, 0)
-    img = get_image_array(img, norm_type)#relies on the model name
-    img = np.array(img)
-    img = img.reshape((1,) + img.shape)
-    preds_test = model.predict(img, verbose=0)
-    preds_test = preds_test.argmax(axis=-1)
 
-    return preds_test[0]
+# method which manually computes relevant metrics for a given trained model on a given dataset
+def predictions_for_metrics(model, frame_path, mask_path, norm_type):
+    img_seg_pairs = get_pairs_from_paths(frame_path, mask_path)
+    # create vectors representing the model predictions and ground truth for the given dataset
+    preds = np.array([])
+    masks = np.array([])
+    for img, mask in img_seg_pairs:
+        img = cv2.imread(img, 0)
+        img = get_image_array(img, norm_type)
+        img = img.reshape((1,) + img.shape)
+        img = img.astype(np.float32)
+        prediction = model.predict(img, verbose=0).argmax(axis=-1).astype(np.float32)[0]
+        preds = np.concatenate((preds, prediction), axis=None)
+        
+        mask = cv2.imread(mask, 0)
+        mask = mask.astype(np.float32)
+        masks = np.concatenate((masks, mask), axis=None)
+    # compute the metrics here
+    f1, binary_acc, tissue_acc = evaluate_metrics(preds, masks)
 
-# new
+    return f1, binary_acc, tissue_acc
+
+
+# method for assessign models offline, untested
 def assess_model_for_metrics(model, frame_path, mask_path, output_folder):
     img_seg_pairs = get_pairs_from_paths(frame_path, mask_path)
     #load the model

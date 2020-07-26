@@ -110,7 +110,7 @@ def image_segmentation_generator(images_path, segs_path, batch_size, n_classes, 
             mask = cv2.imread(mask, cv2.IMREAD_ANYDEPTH)#new changed from 0 
             # if the raw images are 16-bit, convert them to 8-bit for brightness augmentation and preprocessing by division 
             if img.dtype == np.uint16: 
-                img = (img/256).astype(np.uint8) 
+                img = (img // 256).astype(np.uint8) 
             # apply augmentation 
             if aug_type is not None: 
                 img, mask = augment_pair(img, mask, aug_type) 
