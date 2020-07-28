@@ -4,7 +4,7 @@ import random
 import numpy as np 
 import cv2 
 from augmentation import augment_pair 
-#TODO: 
+#TODO
 ''' 
 - add documentation to this file 
 ''' 
@@ -57,7 +57,21 @@ def get_pairs_from_paths(images_path, segs_path):
                                   "found for image {0}." 
                                   .format(image_full_path)) 
  
-    return return_value 
+    return return_value
+
+# this method is like get_pairs_from_paths but doesn't require any masks
+def get_images_from_path(images_path):
+     
+    ACCEPTABLE_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", ".bmp"] 
+    image_files = [] 
+ 
+    for dir_entry in os.listdir(images_path): 
+        if os.path.isfile(os.path.join(images_path, dir_entry)) and \
+           os.path.splitext(dir_entry)[1] in ACCEPTABLE_IMAGE_FORMATS:
+            image_files.append(os.path.join(images_path, dir_entry))
+            
+    return image_files
+
  
 # really as this method does is normalize and add a dimension, not load 
 def get_image_array(img, norm_type): 
@@ -83,7 +97,7 @@ def get_segmentation_array(img, n_classes, width, height):
  
     seg_labels = np.zeros((height, width, n_classes)) 
  
-    for c in range(n_classes):#TODO seems this could be done simpler 
+    for c in range(n_classes):
         seg_labels[:, :, c] = (img == c).astype(int) 
  
     return seg_labels 

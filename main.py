@@ -1,4 +1,4 @@
-from predict import assess_models, assess_models_in_folders
+from predict import assess_models, assess_models_in_folders, segment_folder
 from finetuning import finetuning_loop, finetuning_random
 from visualize_dataset import visualize_segmentation_dataset
 #TODO
@@ -41,7 +41,7 @@ def main():
         max_epochs = 150
         patience = 10
 
-    # finetune the mini unet model
+    #finetune the mini unet model
     finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, 
                       image_size, max_epochs, patience,
                       num_models=10)
@@ -50,10 +50,13 @@ def main():
     #                 test_frames_path, test_masks_path,
     #                 image_size, max_epochs, patience)
 
-    # make predictions
+    #make predictions
     # assess_models_in_folders(history_dir, test_frames_path, test_masks_path, output_dir)
+
+    #segment a folder of images with a specified model
+    # segment_folder(history_dir + 'unetMini_num_1_normtype_divide/unetMini_num_1_normtype_divide.h5', train_frames_path, output_dir)
     
     #visualize dataset
-    #visualize_segmentation_dataset(train_frames_path, train_masks_path, 'distortionless')
+    # visualize_segmentation_dataset(train_frames_path, train_masks_path, 'distortionless')
 
 main()
