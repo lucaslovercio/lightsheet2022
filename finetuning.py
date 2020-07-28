@@ -245,18 +245,19 @@ def finetuning_random(history_dir,
             + '_normtype_' + str(norm_type)# make sure norm_type is part of the name, or assess_model() won't work
         
         hyperparameters = {'name': modelUnet.name,
-                      'loss': loss,
-                      'filters': first_filters,
-                      'lr': learning_rate, 
-                      'activation': activation, 
-                      'ksize': kernel_size,  
-                      'activation_last': activation_last, 
-                      'maxpool': maxpool, 
-                      'batchnorm': batch_norm, 
-                      'dropout': dp, 
-                      'optim': optimizer, 
-                      'aug': augmentation, 
-        'normtype': norm_type}
+                           'loss': loss,
+                           'filters': first_filters,
+                           'lr': learning_rate,
+                           'batch size': batch_size, 
+                           'activation': activation, 
+                           'ksize': kernel_size,  
+                           'activation_last': activation_last, 
+                           'maxpool': maxpool, 
+                           'batchnorm': batch_norm, 
+                           'dropout': dp, 
+                           'optim': optimizer, 
+                           'aug': augmentation, 
+                           'normtype': norm_type}
 
         training_history = results.history
         
