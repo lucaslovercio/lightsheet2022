@@ -267,7 +267,7 @@ def save_random_models(model_list, path):
         output_text += 'Manual F1'.ljust(28, '.') + str(model['f1']) + '\n' \
             + 'Manual Binary Accuracy'.ljust(28, '.') + str(model['binary_accuracy']) + '\n' \
             + 'Manual Tissue Accuracy'.ljust(28, '.') + str(model['tissue_accuracy']) + '\n' \
-            + 'Validation Loss Value'.ljust(28, '.') + str(model['history']['val_loss'][model['best_epoch']]) + '\n'#TODO1 new
+            + 'Validation Loss Value'.ljust(28, '.') + str(model['history']['val_loss'][model['best_epoch']]) + '\n'
         output_text += '___________________________________________________________________________\n' \
             + '___________________________________________________________________________\n'
     f.write(output_text)

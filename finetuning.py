@@ -167,7 +167,7 @@ def finetuning_random(history_dir,
                       val_frames_path, val_masks_path,
                       test_frames_path, test_masks_path,
                       img_size=128, max_epochs=10000, patience=100,
-                      tuning_metric='val_f1_macro', percentile=75, num_models=1): 
+                      tuning_metric='val_f1_macro', percentile=80, num_models=1):
     # variable to store the highest recorded f1 score to date
     best_f1 = -1
     # variable to track how many models have been trained so far

@@ -24,8 +24,8 @@ def main():
         test_masks_path = '../TissueDataset1024/Test/Mask'
         # training specifications
         image_size = 1024
-        max_epochs = 500
-        patience = 25
+        max_epochs = 250
+        patience = 20
     else:
         # train paths
         train_frames_path = 'TissueDataset/Training/Original'
