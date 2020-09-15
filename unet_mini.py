@@ -49,7 +49,7 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy'
     conv1 = Activation(activation)(conv1)
 
     #conv1b
-    conv1 = Conv2D(firstFilters, (kSize, kSize), padding='same')(inputs)
+    conv1 = Conv2D(firstFilters, (kSize, kSize), padding='same')(conv1)
     if batchNorm:
         conv1 = BatchNormalization()(conv1)
     conv1 = Activation(activation)(conv1)

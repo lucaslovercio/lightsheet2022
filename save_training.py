@@ -204,7 +204,7 @@ def save_summary_txt(model, history, filename, model_info, history_index=-1, val
     f.write(output_text)
     
     stringlist = []
-    model.summary(print_fn=lambda x: stringlist.append(x))
+    model.summary(line_length=200, print_fn=lambda x: stringlist.append(x))#TODO1
     short_model_summary = '\n'.join(stringlist)
     f.writelines('\n\nModel summary:  ' + model_info + '\n\n')# changed
     f.writelines(short_model_summary + '\n\n')

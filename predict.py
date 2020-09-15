@@ -1,4 +1,4 @@
-from keras.models import load_model
+from tensorflow.keras.models import load_model#TODO1 added tensorflow
 import numpy as np
 import cv2
 from data_loader import get_image_array, get_pairs_from_paths, get_images_from_path
@@ -56,7 +56,7 @@ def segment_folder(model, frame_path, output_folder):
     for img in imgs:
         img_name = img[img.rfind('\\') + 1:]#this gets the image name out of the path
         pred = prediction(model, img, norm_type)
-        cv2.imwrite(output_folder + img_name, pred)
+        cv2.imwrite(output_folder + '/' + img_name, pred)
     return 
 
 

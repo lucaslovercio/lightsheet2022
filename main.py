@@ -40,22 +40,25 @@ def main():
         image_size = 128
         max_epochs = 150
         patience = 10
+        #TODO1 changed below
+        test_frames_path = 'TissueDataset1024/Test/Original'
+        test_masks_path = 'TissueDataset1024/Test/Mask'
 
     #finetune the mini unet model
-    finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, 
-                      image_size, max_epochs, patience,
-                      num_models=10)
-    # finetuning_loop(history_dir, train_frames_path, train_masks_path,
-    #                 val_frames_path, val_masks_path,
-    #                 test_frames_path, test_masks_path,
-    #                 image_size, max_epochs, patience)
+    # finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, 
+    #                   image_size, max_epochs, patience,
+    #                   num_models=10)
+    finetuning_loop(history_dir, train_frames_path, train_masks_path,
+                    val_frames_path, val_masks_path,
+                    test_frames_path, test_masks_path,
+                    image_size, max_epochs, patience)
 
     #make predictions
     # assess_models_in_folders(history_dir, test_frames_path, test_masks_path, output_dir)
 
     #segment a folder of images with a specified model
-    # segment_folder(history_dir + 'unetMini_num_1_normtype_divide/unetMini_num_1_normtype_divide.h5', train_frames_path, output_dir)
-    
+    #segment_folder(history_dir + 'unetMini_num_0_normtype_divide/unetMini_num_0_normtype_divide.h5', test_frames_path, output_dir)
+    #segment_folder(history_dir + 'unetMini_num_0_normtype_divide/unetMini_num_0_normtype_divide.h5', '../VolumeDAPITiles_ForTissue', '../VolumeDAPISegs_ForTissue')
     #visualize dataset
     # visualize_segmentation_dataset(train_frames_path, train_masks_path, 'distortionless')
 
