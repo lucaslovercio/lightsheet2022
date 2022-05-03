@@ -1,3 +1,5 @@
+#Previous Sam description:
+
 # tissue-segmentation-net
 
 Code to segment DAPI tissue images using unet.
