@@ -9,8 +9,9 @@ from visualize_dataset import visualize_segmentation_dataset
 cc = False
 
 def main():
+    folderInput = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/lightsheet2021/Training_Validation_Full/'
     # output paths
-    history_dir = './history_dev/'
+    history_dir = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/lightsheet2021/Training_Validation_Full/history_2/'
     output_dir = './predictions_dev/'
     if cc:
         # train paths
@@ -28,21 +29,21 @@ def main():
         patience = 20
     else:
         # train paths
-        train_frames_path = 'TissueDataset/Training/Original'
-        train_masks_path = 'TissueDataset/Training/Mask'
+        train_frames_path = folderInput + 'train/original_256'
+        train_masks_path = folderInput + 'train/observer_mask_256'
         # validation paths
-        val_frames_path = 'TissueDataset/Validation/Original'
-        val_masks_path = 'TissueDataset/Validation/Mask'
+        val_frames_path = folderInput + 'val/original_256'
+        val_masks_path = folderInput + 'val/observer_mask_256'
         # test paths
         test_frames_path = 'TissueDataset/Test/Original'
         test_masks_path = 'TissueDataset/Test/Mask'
         # training specifications
-        image_size = 128
-        max_epochs = 150
+        image_size = 256
+        max_epochs = 100
         patience = 10
         #TODO1 changed below
-        test_frames_path = 'TissueDataset1024/Test/Original'
-        test_masks_path = 'TissueDataset1024/Test/Mask'
+        test_frames_path = folderInput + 'test/original_256'
+        test_masks_path = folderInput + 'test/observer_mask_256'
 
     #finetune the mini unet model
     # finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, 

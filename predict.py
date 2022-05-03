@@ -37,15 +37,14 @@ def prediction(model, image_path, norm_type=None):
     img = img.reshape((1,) + img.shape)
     
     preds_test = model.predict(img, verbose=0)
-    preds_test = preds_test.argmax(axis=-1) * 50
+    preds_test = preds_test.argmax(axis=-1) #* 50
 
     return preds_test[0]
 
 
 # method for using a model (specified by path) to output segmentations for all images in a folder to another folder
-def segment_folder(model, frame_path, output_folder):
+def segment_folder(model, frame_path, output_folder, norm_type=None):
     imgs = get_images_from_path(frame_path)
-    norm_type = None
     if 'divide_and_sub' in model:
         norm_type = 'divide_and_sub'
     elif 'sub_mean' in model:
@@ -54,9 +53,12 @@ def segment_folder(model, frame_path, output_folder):
         norm_type = 'divide'
     model = load_model(model, compile=False)
     for img in imgs:
-        img_name = img[img.rfind('\\') + 1:]#this gets the image name out of the path
+        img_name = img[img.rfind('/') + 1:]#this gets the image name out of the path
+        print(img_name + " " + norm_type)
         pred = prediction(model, img, norm_type)
-        cv2.imwrite(output_folder + '/' + img_name, pred)
+        outputName = output_folder + '/' + img_name
+        print(outputName)
+        cv2.imwrite(outputName, pred)
     return 
 
 

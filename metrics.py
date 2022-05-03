@@ -31,7 +31,7 @@ Has shape = (batch_size, 128, 128, 3).
 ########### below here are stateless versions of metrics
 
 # compute the confusion matrix values for a given class
-def get_confusion_matrix_values(y_true, y_pred, class_num):
+def get_confusion_matrix_values(y_true, y_pred, class_num, sample_weight=None):
     # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
     y_pred_flat = tf.math.argmax(y_pred, axis = -1)
     y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -50,17 +50,17 @@ def get_confusion_matrix_values(y_true, y_pred, class_num):
     return tp, tn, fp, fn
 
 # compute the recall for a given class
-def recall_class(y_true, y_pred, class_num):
+def recall_class(y_true, y_pred, class_num, sample_weight=None):
     tp, _, _, fn = get_confusion_matrix_values(y_true, y_pred, class_num)
     return tp / (tp + fn + K.epsilon())
 
 # compute the precision for a given class
-def precision_class(y_true, y_pred, class_num):
+def precision_class(y_true, y_pred, class_num, sample_weight=None):
     tp, _, fp, _ = get_confusion_matrix_values(y_true, y_pred, class_num)
     return tp / (tp + fp + K.epsilon())
 
 # macroaveraged recall over all classes
-def recall_macro_batch(y_true, y_pred):
+def recall_macro_batch(y_true, y_pred, sample_weight=None):
     num_classes = y_pred.shape[-1]
     recall_accumulator = 0
     for i in range(num_classes):
@@ -68,7 +68,7 @@ def recall_macro_batch(y_true, y_pred):
     return recall_accumulator / num_classes
 
 # macroaveraged precision over all classes
-def precision_macro_batch(y_true, y_pred):
+def precision_macro_batch(y_true, y_pred, sample_weight=None):
     num_classes = y_pred.shape[-1]
     precision_accumulator = 0
     for i in range(num_classes):
@@ -76,33 +76,33 @@ def precision_macro_batch(y_true, y_pred):
     return precision_accumulator / num_classes
 
 # macroaveraged f1 score over all classes
-def f1_macro_batch(y_true, y_pred):
+def f1_macro_batch(y_true, y_pred, sample_weight=None):
     recall = recall_macro_batch(y_true, y_pred)
     precision = precision_macro_batch(y_true, y_pred)
     return 2 * (precision * recall) / (precision + recall + K.epsilon())
 
 # precision and recall for individual classes
-def prec_0(y_true, y_pred):
-    return precision_class(y_true, y_pred, 0)
+def prec_0(y_true, y_pred, sample_weight=None):
+    return precision_class(y_true, y_pred, 0, sample_weight=None)
 
-def reca_0(y_true, y_pred):
-    return recall_class(y_true, y_pred, 0)
+def reca_0(y_true, y_pred, sample_weight=None):
+    return recall_class(y_true, y_pred, 0, sample_weight=None)
 
-def prec_1(y_true, y_pred):
-    return precision_class(y_true, y_pred, 1)
+def prec_1(y_true, y_pred, sample_weight=None):
+    return precision_class(y_true, y_pred, 1, sample_weight=None)
 
-def reca_1(y_true, y_pred):
-    return recall_class(y_true, y_pred, 1)
+def reca_1(y_true, y_pred, sample_weight=None):
+    return recall_class(y_true, y_pred, 1, sample_weight=None)
 
-def prec_2(y_true, y_pred):
-    return precision_class(y_true, y_pred, 2)
+def prec_2(y_true, y_pred, sample_weight=None):
+    return precision_class(y_true, y_pred, 2, sample_weight=None)
 
-def reca_2(y_true, y_pred):
-    return recall_class(y_true, y_pred, 2)
+def reca_2(y_true, y_pred, sample_weight=None):
+    return recall_class(y_true, y_pred, 2, sample_weight=None)
 
 
 # accuracy b/w the two types of tissues
-def tissue_type_accuracy_batch(y_true, y_pred):
+def tissue_type_accuracy_batch(y_true, y_pred, sample_weight=None):
     y_true = tf.argmax(y_true, axis=-1)
     y_pred = tf.argmax(y_pred, axis=-1)
 
@@ -117,7 +117,7 @@ def tissue_type_accuracy_batch(y_true, y_pred):
 
 
 # accuracy of tissue vs. background segmentations
-def binary_accuracy_batch(y_true, y_pred):
+def binary_accuracy_batch(y_true, y_pred, sample_weight=None):
     y_pred_flat = tf.math.argmax(y_pred, axis = -1)
     y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
     # remove the predictions and ground truth for the non-background classes
@@ -147,7 +147,7 @@ class F1Macro(tf.keras.metrics.Metric):
         self.false_positives_2 = self.add_weight(name='fp2', initializer='zeros')
         self.false_negatives_2 = self.add_weight(name='fn2', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -211,7 +211,7 @@ class PrecisionMacro(tf.keras.metrics.Metric):
         self.true_positives_2 = self.add_weight(name='tp2', initializer='zeros')
         self.false_positives_2 = self.add_weight(name='fp2', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -259,7 +259,7 @@ class RecallMacro(tf.keras.metrics.Metric):
         self.true_positives_2 = self.add_weight(name='tp2', initializer='zeros')
         self.false_negatives_2 = self.add_weight(name='fn2', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -301,7 +301,7 @@ class BinaryAccuracy(tf.keras.metrics.Metric):
         self.correct_count = self.add_weight(name='correct_count', initializer='zeros')
         self.total_count = self.add_weight(name='total_count', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
         # remove the predictions and ground truth for the non-background classes
@@ -330,7 +330,7 @@ class TissueTypeAccuracy(tf.keras.metrics.Metric):
         self.correct_count = self.add_weight(name='correct_count', initializer='zeros')
         self.total_count = self.add_weight(name='total_count', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.argmax(y_true, axis=-1)
         y_pred = tf.argmax(y_pred, axis=-1)
         
@@ -363,7 +363,7 @@ class F1Macro0(tf.keras.metrics.Metric):
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -395,7 +395,7 @@ class PrecisionMacro0(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -423,7 +423,7 @@ class RecallMacro0(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -453,7 +453,7 @@ class F1Macro1(tf.keras.metrics.Metric):
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -485,7 +485,7 @@ class PrecisionMacro1(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -513,7 +513,7 @@ class RecallMacro1(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -543,7 +543,7 @@ class F1Macro2(tf.keras.metrics.Metric):
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -575,7 +575,7 @@ class PrecisionMacro2(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_positives = self.add_weight(name='fp', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])
@@ -603,7 +603,7 @@ class RecallMacro2(tf.keras.metrics.Metric):
         self.true_positives = self.add_weight(name='tp', initializer='zeros')
         self.false_negatives = self.add_weight(name='fn', initializer='zeros')
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         # convert y_pred from a matrix of softmax probabilities to one-hot encoded predictions
         y_pred_flat = tf.math.argmax(y_pred, axis = -1)
         y_pred = tf.one_hot(y_pred_flat, depth = y_pred.shape[-1])

@@ -124,8 +124,8 @@ def unet(lr=1e-4, input_size=(256, 256, 1), loss_mode='categorical_crossentropy'
 
     o = Conv2D(nClasses, (1, 1), padding='same',activation=activation_last)(conv5)
 
-    model = Model(inputs=inputs, outputs=o)
-    model.name = "unetMini"
+    model = Model(inputs=inputs, outputs=o, name = "unetMini")
+    #model.name = "unetMini"
 
     loss_func = get_loss_func(loss_mode)
     optimizer = get_optimizer(optimizer, lr)
