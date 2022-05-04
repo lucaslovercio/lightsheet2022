@@ -9,9 +9,9 @@ from visualize_dataset import visualize_segmentation_dataset
 cc = False
 
 def main():
-    folderInput = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/lightsheet2021/Training_Validation_Full/'
+    folderInput = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/Image-to-Image/Annotations/'
     # output paths
-    history_dir = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/lightsheet2021/Training_Validation_Full/history_2/'
+    history_dir = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/Image-to-Image/Annotations/history_only_good/'
     output_dir = './predictions_dev/'
     if cc:
         # train paths
@@ -29,21 +29,21 @@ def main():
         patience = 20
     else:
         # train paths
-        train_frames_path = folderInput + 'train/original_256'
-        train_masks_path = folderInput + 'train/observer_mask_256'
+        train_frames_path = folderInput + 'Training/Original_192/Good_192'
+        train_masks_path = folderInput + 'Training/Obs_Labels_192/Good_192'
         # validation paths
-        val_frames_path = folderInput + 'val/original_256'
-        val_masks_path = folderInput + 'val/observer_mask_256'
+        val_frames_path = folderInput + 'Validation/Original_192/Good_192'
+        val_masks_path = folderInput + 'Validation/Obs_Labels_192/Good_192'
         # test paths
-        test_frames_path = 'TissueDataset/Test/Original'
-        test_masks_path = 'TissueDataset/Test/Mask'
+        #test_frames_path = 'TissueDataset/Test/Original'
+        #test_masks_path = 'TissueDataset/Test/Mask'
         # training specifications
-        image_size = 256
-        max_epochs = 100
+        image_size = 192
+        max_epochs = 50
         patience = 10
         #TODO1 changed below
-        test_frames_path = folderInput + 'test/original_256'
-        test_masks_path = folderInput + 'test/observer_mask_256'
+        test_frames_path = folderInput + 'Test/Original_192/Good_192'
+        test_masks_path = folderInput + 'Test/Obs1_Labels_192/Good_192'
 
     #finetune the mini unet model
     # finetuning_random(history_dir, train_frames_path, train_masks_path, val_frames_path, val_masks_path, test_frames_path, test_masks_path, 
