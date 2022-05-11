@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 from data_loader import image_segmentation_generator
-from unet_mini import unet
+from unet_mini import unet4levels
 from save_training import save_model, save_random_models
 from predict import predictions_for_metrics
 #TODO
@@ -18,13 +18,13 @@ OPTIM_TYPE = 'max' # either min or max, depending on MONITOR
 
 # hyperparameters
 BATCH_SIZES = [8]
-LEARNING_RATES = [1e-2, 1e-3, 1e-4] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+LEARNING_RATES = [1e-4, 1e-3] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
 LOSSES = ['dice50_cce50'] # replace with ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
 ACTIVATIONS = ['relu'] # replace with ['relu', 'sigmoid', 'tanh']
 ACTIVATION_LASTS = ['softmax']
-MAXPOOLINGS = [2,4]
-FIRST_FILTERS = [8, 16] # replace with [8, 16, 32, 64]
-KERNEL_SIZES = [7,15,25]
+MAXPOOLINGS = [4, 2]
+FIRST_FILTERS = [16, 8] # replace with [8, 16, 32, 64]
+KERNEL_SIZES = [15, 7]
 DROPOUT = [True]
 BATCH_NORM = [True]
 NORM_TYPES = ['divide'] # replace with [None, 'divide', 'sub_mean', 'divide_and_sub']
@@ -69,7 +69,7 @@ def finetuning_loop(history_dir,
                                                         num_val_images = len(os.listdir(val_frames_path))
                                                         
                                                         # build the model
-                                                        modelUnet = unet(lr = learning_rate, input_size = (img_size, img_size,1), loss_mode = loss,
+                                                        modelUnet = unet4levels(lr = learning_rate, input_size = (img_size, img_size,1), loss_mode = loss,
                                                                          firstFilters = first_filters, kSize = kernel_size,
                                                                          activation_last=activation_last, pool_size_max_pooling=maxpool, batchNorm = batch_norm,
                                                                          dropOutLayerFlag=dp, activation=activation, optimizer=optimizer)
