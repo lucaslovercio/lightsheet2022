@@ -31,10 +31,12 @@ Outputs:
 Saves plots to the directory with the model weights.
 '''
 def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
+    print("-------------print(history.history.keys())----------------")
     print(history.history.keys())
+    print("-------------END  print(history.history.keys())----------------")
     # plot training and validation accuracy values
     plt.plot(history.history['accuracy'], 'C0-o', markevery=[best_model_epoch])
-    #plt.plot(history.history['val_accuracy'], 'C0--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_accuracy'], 'C0--o', markevery=[best_model_epoch])
     plt.plot(history.history['binary_accuracy_batch'], 'C1-o', markevery=[best_model_epoch])
     #plt.plot(history.history['val_binary_accuracy_batch'], 'C1--o', markevery=[best_model_epoch])
     plt.plot(history.history['tissue_type_accuracy_batch'], 'C2-o', markevery=[best_model_epoch])
@@ -43,7 +45,7 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     #plt.legend(['Train Acc', 'Val Acc', 'Train Binary Acc', 'Val Binary Acc', 'Train Tissue Acc', 'Val Tissue Acc'], loc='lower right')
-    plt.legend(['Train Acc', 'Train Binary Acc', 'Train Tissue Acc'],
+    plt.legend(['Train Acc', 'Train Val Acc', 'Train Binary Acc', 'Train Tissue Acc'],
                loc='lower right')
     plt.xlim([0,last_epoch])
     plt.ylim(0,1)
@@ -70,11 +72,12 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
 
     # plot training and validation loss values
     plt.plot(history.history['loss'], marker='o', markevery=[best_model_epoch])
-    #plt.plot(history.history['val_loss'], marker='o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_loss'], marker='o', markevery=[best_model_epoch])
     plt.title('Model Loss')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
-    plt.legend(['Train Loss'], loc='lower left')
+    #plt.legend(['Train Loss'], loc='lower left')
+    plt.legend(['Train Loss', 'Val Loss'], loc='lower left')
     plt.xlim([0,last_epoch])
     plt.ylim(0, max(history.history['loss']) + 1)
     #plt.show()
@@ -83,13 +86,14 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
 
     # plot batch averaged precision, recall, and f1 score
     plt.plot(history.history['f1_macro_batch'], 'C0--o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro_batch'], 'C3--o', markevery=[best_model_epoch])
     plt.plot(history.history['recall_macro_batch'], 'C1--o', markevery=[best_model_epoch])
     plt.plot(history.history['precision_macro_batch'], 'C2--o', markevery=[best_model_epoch])
 
     plt.title('Batch Val/Train F1')
     plt.ylabel('Measure')
     plt.xlabel('Epoch')
-    plt.legend(['Train F1', 'Train Reca', 'Train Prec'])
+    plt.legend(['Train F1', 'Val F1', 'Train Reca', 'Train Prec'])
     plt.xlim([0, last_epoch])
     plt.ylim(0,1)
     plt.savefig(model_name + '_f1.png')
@@ -171,14 +175,14 @@ def plot_learning_curves(history, last_epoch, best_model_epoch, model_name):
     plt.plot(history.history['f1_macro'], 'C0-o', markevery=[best_model_epoch])
     # plt.plot(history.history['recall_macro'], 'C1--o', markevery=[best_model_epoch])
     # plt.plot(history.history['precision_macro'], 'C2--o', markevery=[best_model_epoch])
-    #plt.plot(history.history['val_f1_macro'], 'C1-o', markevery=[best_model_epoch])
+    plt.plot(history.history['val_f1_macro'], 'C1-o', markevery=[best_model_epoch])
     # plt.plot(history.history['val_recall_macro'], 'C1-o', markevery=[best_model_epoch])
     # plt.plot(history.history['val_precision_macro'], 'C2-o', markevery=[best_model_epoch])
     
-    plt.title('F1 Scores on Epochs')
+    plt.title('F1 Maco on Epochs')
     plt.ylabel('Measure')
     plt.xlabel('Epoch')
-    plt.legend(['Train F1'], loc='upper left')
+    plt.legend(['Train F1M', 'Val F1M'], loc='upper left')
     plt.xlim([0, last_epoch])
     plt.ylim(0.5,1)
     plt.savefig(model_name + '_f1_epoch.png')

@@ -18,13 +18,13 @@ OPTIM_TYPE = 'max' # either min or max, depending on MONITOR
 
 # hyperparameters
 BATCH_SIZES = [8]
-LEARNING_RATES = [1e-4, 1e-3] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+LEARNING_RATES = [1e-5, 1e-4] # replace with [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
 LOSSES = ['dice50_cce50'] # replace with ['categorical_crossentropy', 'dice20_cce80', 'dice50_cce50', 'dice']
 ACTIVATIONS = ['relu'] # replace with ['relu', 'sigmoid', 'tanh']
 ACTIVATION_LASTS = ['softmax']
-MAXPOOLINGS = [4, 2]
-FIRST_FILTERS = [16, 8] # replace with [8, 16, 32, 64]
-KERNEL_SIZES = [15, 7]
+MAXPOOLINGS = [2, 4]
+FIRST_FILTERS = [4, 8, 16, 32] # replace with [8, 16, 32, 64]
+KERNEL_SIZES = [15, 7, 5]
 DROPOUT = [True]
 BATCH_NORM = [True]
 NORM_TYPES = ['divide'] # replace with [None, 'divide', 'sub_mean', 'divide_and_sub']
@@ -147,7 +147,7 @@ def finetuning_loop(history_dir,
                                                         # number of epochs before early stopping saved the best model
                                                         best_model_epoch = last_epoch - patience
                                                         # the best F1 score achieved while training this model
-                                                        current_f1 = results.history['f1_macro'][best_model_epoch]#use batch version of val_f1_macro for the compute canada (cc) machine
+                                                        current_f1 = results.history['val_f1_macro'][best_model_epoch]#use batch version of val_f1_macro for the compute canada (cc) machine
                                                         print("last_epoch " + str(last_epoch) + " best_model_epoch " + str(best_model_epoch) + " current f1 " + str(current_f1))
                                                         # if the current model has the best F1 score yet, save it
                                                         if current_f1 > best_f1:

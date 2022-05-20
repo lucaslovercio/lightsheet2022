@@ -1,6 +1,6 @@
 from keras.models import *
 from keras.layers import *
-from keras.optimizers import *
+from tensorflow.keras.optimizers import Adam, RMSprop
 
 import losses
 import metrics

@@ -35,8 +35,15 @@ def prediction(model, image_path, norm_type=None):
     img = get_image_array(img, norm_type)#relies on the model name
     img = np.array(img)
     img = img.reshape((1,) + img.shape)
-    
+    print('shape before unet')
+    print(img.shape)
+    print(np.min(img))
+    print(np.max(img))
     preds_test = model.predict(img, verbose=0)
+    print('shape after unet')
+    print(preds_test.shape)
+    print(np.min(preds_test))
+    print(np.max(preds_test))
     preds_test = preds_test.argmax(axis=-1) #* 50
 
     return preds_test[0]

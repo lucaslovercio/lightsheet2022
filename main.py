@@ -13,7 +13,6 @@ def main():
 
     #Is TF using GPU?
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
-    print("Is GPU Available: ", tf.test.is_gpu_available())
 
     folderInput = '/media/lucas/DATA/POSDOC_Calgary/Lightsheet/Image-to-Image/Annotations/'
     # output paths
@@ -45,8 +44,8 @@ def main():
         #test_masks_path = 'TissueDataset/Test/Mask'
         # training specifications
         image_size = 192
-        max_epochs = 20
-        patience = 5
+        max_epochs = 350
+        patience = 20
         #TODO1 changed below
         test_frames_path = folderInput + 'Test/Original_192/Good_192'
         test_masks_path = folderInput + 'Test/Obs1_Labels_192/Good_192'
